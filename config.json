@@ -1,0 +1,9 @@
+{
+    "raw_data_path":"/Volumes/MERFISH_COLD/XP872/20210917 4T1 C1E1/4T1/C1E1",
+    "results_path":"/Volumes/MERFISH_COLD/XP872/20210917 4T1 C1E1/4T1/C1E1/debug_report_test",
+    "raw_image_format": "{wv}nm, Raw/merFISH_{ir}_{fov}_{z}.TIFF",
+    "channel": [],
+    "fov": [],
+    "ir": [],
+    "z": []
+}

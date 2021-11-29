@@ -1,0 +1,10 @@
+name: experiment_report
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.7
+  - snakemake
+  - matplotlib
+  - scikit-image
+  - numpy
