@@ -1,6 +1,6 @@
 {
-    "raw_data_path":"/Volumes/MERFISH_COLD/XP872/20210917 4T1 C1E1/4T1/C1E1",
-    "results_path":"/Volumes/MERFISH_COLD/XP872/20210917 4T1 C1E1/4T1/C1E1/debug_report_test",
+    "raw_data_path":"https://bccrcprccatlassa.blob.core.windows.net/atlas/XP872?sv=2020-04-08&st=2021-11-30T17%3A46%3A40Z&se=2021-12-01T17%3A46%3A40Z&sr=c&sp=rl&sig=lD%2FfzyWQ7%2BIW6u5aT7lWqdNWwQOdIBMxsbs6tbNyfmI%3D",
+    "results_path":"/Volumes/MERFISH_COLD/XP872/debug_report_test_from_remote",
     "raw_image_format": "{wv}nm, Raw/merFISH_{ir}_{fov}_{z}.TIFF",
     "channel": [],
     "fov": [],
