@@ -12,7 +12,7 @@ def download_azure():
     if config["isRemote"]=="N" or os.path.exists(os.path.join(config['results_path'],'data')):
         return None
     
-    shell("azcopy cp \"{}\" \"{}\" --recursive".format(config["raw_data_path"],os.path.join(config['results_path'],'data')))
+    shell(config["azure_command"].format(config["raw_data_path"],os.path.join(config['results_path'],'data')))
     
     return None
 
