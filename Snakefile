@@ -87,7 +87,7 @@ rule all_done:
         shell("touch \"{output[0]}\"")
 
 rule all:
-    threads:16
+    threads:1
     input:
         os.path.join(config['results_path'],'all_done.t')
 
@@ -100,7 +100,7 @@ def isRemote(wildcards):
         return directory(os.path.join(config['results_path'],'data'))
 
 rule create_image_stack:
-    threads:16
+    threads:1
     message: default_message
     input:
         isRemote
@@ -112,7 +112,7 @@ rule create_image_stack:
                                     wvs,wildcards.fov,irs,zs,output.out_file,output.coord_file)
 
 rule brightness_report:
-    threads:16
+    threads:1
     message: default_message
     input:
         img_stack = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
@@ -123,7 +123,7 @@ rule brightness_report:
         reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,fovs)
 
 rule compile_brightness_report:
-    threads:16
+    threads:1
     message: default_message
     input:
         expand(os.path.join(config['results_path'],'brightness_report_{fov}.pdf'),fov=fovs)
@@ -134,7 +134,7 @@ rule compile_brightness_report:
 
 
 rule focus_report:
-    threads:16
+    threads:1
     message: default_message
     input:
         img_stack = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
@@ -145,7 +145,7 @@ rule focus_report:
         reports.generate_focus_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,fovs)
 
 rule compile_focus_report:
-    threads:16
+    threads:1
     message: default_message
     input:
         expand(os.path.join(config['results_path'],'focus_report_{fov}.pdf'),fov=fovs)
