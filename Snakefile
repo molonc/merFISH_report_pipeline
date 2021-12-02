@@ -84,6 +84,7 @@ rule all_done:
     run:
         if config["isRemote"]=="Y":
             shell("rm -rf \"{}\"".format(os.path.join(config['results_path'],'data')))
+        shell("rm -f \"{}\"".format(os.path.join(config['results_path'],'img*')))
         shell("touch \"{output[0]}\"")
 
 rule all:
