@@ -102,6 +102,10 @@ class BrightnessReport(BaseReport):
 
         largest = mip_z_stack.max()
         f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=len(self.coords['wvs']),sharex=True,sharey=True,figsize=(len(self.coords['wvs'])*4,len(self.coords['irs'])*4))
+        if not isinstance(ax,np.ndarray):
+            ax = np.array([ax])
+        if len(ax.shape)==1:
+            ax=ax[:,np.newaxis]
         plt.suptitle(f'FOV: {self.fov_name}')
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
@@ -130,6 +134,10 @@ class BrightnessReport(BaseReport):
         largest = mip_z_stack.max()
         f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=len(self.coords['wvs']),sharex=True,sharey=True,figsize=(len(self.coords['wvs'])*4,len(self.coords['irs'])*4))
         plt.suptitle(f'FOV: {self.fov_name}')
+        if not isinstance(ax,np.ndarray):
+            ax = np.array([ax])
+        if len(ax.shape)==1:
+            ax=ax[:,np.newaxis]
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
                 img = mip_z_stack[:,:,iwv,iir]
@@ -156,6 +164,10 @@ class BrightnessReport(BaseReport):
 
         f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=len(self.coords['wvs']),sharex=True,sharey=True,figsize=(len(self.coords['wvs'])*4,len(self.coords['irs'])*4))
         plt.suptitle(f'FOV: {self.fov_name}')
+        if not isinstance(ax,np.ndarray):
+            ax = np.array([ax])
+        if len(ax.shape)==1:
+            ax=ax[:,np.newaxis]
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
                 img = mip_z_stack[:,:,iwv,iir]
@@ -195,6 +207,8 @@ class FocusReport(BaseReport):
     def f_measure_report(self):
         #Take the image stack and do a max projection from all the pixels through z
         f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=1,sharex=True,sharey=True,figsize=(len(self.coords['zs'])*1,15))
+        if not isinstance(ax,np.ndarray):
+            ax = np.array([ax])
         plt.suptitle(f'FOV: {self.fov_name}')
         for iir,ir in enumerate(self.coords['irs']):
             ax[iir].set_title(f'ir: {ir}')

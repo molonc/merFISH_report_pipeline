@@ -6,26 +6,30 @@ import reports
 
 configfile: "config.json"
 
+
+def download_azure():
+    
+    if config["isRemote"]=="N" or os.path.exists(os.path.join(config['results_path'],'data')):
+        return None
+    
+    shell("azcopy cp \"{}\" \"{}\" --recursive".format(config["raw_data_path"],os.path.join(config['results_path'],'data')))
+    
+    return None
+
 def check_params():
-    if not os.path.isdir(os.path.join(config['results_path'],'data')):
-        return [None]*5
-    print('Checking Params')
+
     # Check to see if there are any params that need to be found
     b_findz = len(config['z'])==0
     b_findfov = len(config['fov'])==0
     b_findir = len(config['ir'])==0
     b_findwv = len(config['channel'])==0
 
-    # if all the params are already specified, then just return those and save time
-    if (not b_findfov) and (not b_findir) and (not b_findz) and (not b_findwv):
-        zs = config['z']
-        fovs = config['fov']
-        irs = config['ir'] 
-        wvs = config['channel']
-        return zs,fovs,irs,wvs
 
-    # Otherwise, get all the images
-    files = Path(os.path.join(config['results_path'],'data')).rglob('*.TIFF')
+    # get all the images
+    if config["isRemote"] == "Y":
+        files = Path(os.path.join(config['results_path'],'data')).rglob('*.TIFF')
+    else:
+        files = Path(config['raw_data_path']).rglob('*.TIFF')
     files = list(map(str,files))
     # Find all channel, ir, fov, and z from the file names
     re_filter = r"(.*)(\d{3})(?=nm).*(\B\d{2})\D(\B\d{3})\D(\B\d{2}\b)"
@@ -55,42 +59,51 @@ def check_params():
     else:
         wvs = config['channel']
 
-    full_raw_path = results[0].group(1)
-    
+    if isinstance(results,list) and len(results)>0:
+        full_raw_path = results[0].group(1)
+    else:
+        full_raw_path=''
+
+
     return sorted(list(set(zs)),key=int),sorted(list(set(fovs)),key=int),sorted(list(set(irs)),key=int),sorted(list(set(wvs)),key=int),full_raw_path
 
+
+download_azure()
 zs,fovs,irs,wvs,full_raw_path = check_params()
+
 
 
 default_message= "rule {rule}, {wildcards}, threads: {threads}"
 
 rule all_done:
     input:
-        directory(os.path.join(config['results_path'],'data')),
         os.path.join(config['results_path'],'brightness_report.t'),
-        os.path.join(config['results_path'],'focus_report.t')
+        os.path.join(config['results_path'],'focus_report.t'),
     output:
         os.path.join(config['results_path'],'all_done.t')
-    shell:
-        "rm -rf \"{input[0]}\" && touch \"{output[0]}\""
+    run:
+        if config["isRemote"]=="Y":
+            shell("rm -rf \"{}\"".format(os.path.join(config['results_path'],'data')))
+        shell("touch \"{output[0]}\"")
 
 rule all:
     threads:16
     input:
         os.path.join(config['results_path'],'all_done.t')
 
-rule copy_data:
-    output:
-        directory(os.path.join(config['results_path'],'data'))
-    run:
-        shell("azcopy cp \"{}\" \"{}\" --recursive".format(config["raw_data_path"],output[0]))
 
+def isRemote(wildcards):
+    
+    if config["isRemote"]=="N":
+        return config["raw_data_path"]
+    else:
+        return directory(os.path.join(config['results_path'],'data'))
 
 rule create_image_stack:
     threads:16
     message: default_message
     input:
-        directory(os.path.join(config['results_path'],'data'))
+        isRemote
     output:
         out_file = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
         coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
