@@ -1,10 +1,11 @@
 {
-    "raw_data_path":"/Volumes/MERFISH_COLD/XP872/debug_report_test_from_remoteflag/data",
+    "raw_data_path":"https://bccrcprccatlassa.blob.core.windows.net/atlas/XP872?sv=2020-04-08&st=2021-12-01T23%3A17%3A02Z&se=2021-12-02T23%3A17%3A02Z&sr=c&sp=rl&sig=NUvqGHgxYHRzkHBBGbC5R%2BDscLgqJEUydnhBpN3fQ%2BM%3D",
     "results_path":"/Volumes/MERFISH_COLD/XP872/debug_report_test_from_remoteflag",
     "raw_image_format": "{wv}nm, Raw/merFISH_{ir}_{fov}_{z}.TIFF",
     "channel": [],
     "fov": [],
     "ir": [],
     "z": [],
-    "isRemote":"N"
+    "isRemote":"Y",
+    "azure_command":"azcopy cp \"{}\" \"{}\" --recursive"
 }
