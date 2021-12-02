@@ -100,7 +100,7 @@ def isRemote(wildcards):
         return directory(os.path.join(config['results_path'],'data'))
 
 rule create_image_stack:
-    threads:1
+    threads:8
     message: default_message
     input:
         isRemote
