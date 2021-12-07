@@ -1,3 +1,4 @@
+from numpy.core.numeric import full
 import skimage.io as skio
 import scipy.ndimage as ndi
 import numpy as np
@@ -8,6 +9,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 import matplotlib.colors as mcolors
 
+import pandas as pd
 
 base_colors = list(mcolors.BASE_COLORS)
 
@@ -184,14 +186,14 @@ class BrightnessReport(BaseReport):
 
 
 class FocusReport(BaseReport):
-    def __init__(self,imgstack_file,coord_info,fov,fovs):
+    def __init__(self,imgstack_file,coord_info,fov,fovs,out_csv):
         super().__init__(imgstack_file,coord_info)
         
         self.fov_name = fov
         self.imgstack = self.imgstack[:,:,:,:,0,:]
 
         self.peak_idx = np.zeros((self.imgstack.shape[2],self.imgstack.shape[3]))
-    
+        self.out_csv = out_csv
     def f_measure(self,img):
         filter = np.array([ [1],
                             [0],
@@ -225,10 +227,17 @@ class FocusReport(BaseReport):
                 ax[iir].vlines(peak,0,_output[peak],colors=base_colors[iwv],linestyles='dashed')
                 ax[iir].set_yscale('log')
             ax[iir].legend(self.coords['wvs'])
-        
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
+
+        #Save the pk idx to a csv information for each imaging round
+        df = pd.DataFrame()
+        for iwv,wv in enumerate(self.coords['wvs']):
+            df[str(wv)] = self.peak_idx[iwv,:] # each imaging round is a row
+            df["FOV"] = len(self.peak_idx[iwv,:])*[self.fov_name]
+            df["IR"] = self.coords['irs']
+        df.to_csv(self.out_csv)    
 
 # Brightness report worker-------
 def generate_brightness_reports(image_stack_file,coord_info,out_file,fov,fovs):
@@ -250,16 +259,47 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
 
 
 # Focus report worker-------
-def generate_focus_reports(image_stack_file,coord_info,out_file,fov,fovs):
+def generate_focus_reports(image_stack_file,coord_info,out_file,out_csv,fov,fovs):
     #This was necessary to prototype on OSX...consider removing in the future after testing
     import multiprocessing
-    job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,fov,fovs))
+    job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,out_csv,fov,fovs))
     job.start()
     # focus_worker(image_stack_file,coord_info,out_file,fov,fovs)
 
 
-def focus_worker(image_stack_file,coord_info,out_file,fov,fovs):
-    fr = FocusReport(image_stack_file,coord_info,fov,fovs)
+def focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs):
+    fr = FocusReport(image_stack_file,coord_info,fov,fovs,out_csv)
     fr.set_pdf(PdfPages(filename=out_file))
     fr.f_measure_report()
     fr.closePdf()
+
+# Compile reports----------------
+
+def compile_focus_report(file_list:list,output,irs,wvs):
+    
+    full_df = pd.DataFrame()
+    for fl in file_list:
+        test = pd.read_csv(fl)
+        full_df = full_df.append(test,ignore_index=True)
+    
+    full_df.to_csv(output)
+
+    report_pdf = PdfPages(filename = output)
+    #x:FOV y:z spy:IR
+    f,ax = plt.subplots(nrows = len(irs),ncols = 1,sharex=True,sharey=True,figsize=(len(file_list)*3,len(irs)*4))
+    if not isinstance(ax,np.ndarray):
+        ax = np.array(ax)
+
+    for iir, ir in enumerate(irs):#for each ir
+        
+        for iwv, wv in enumerate(wvs):#for each wv
+            data = full_df[["FOV",str(wv)]][(full_df["IR"]==int(ir))] #extract the FOVs...assume stuff is ordered
+            
+            ax[iir].plot("FOV",str(wv),data=data)
+            
+        ax[iir].set_ylabel(f"IR:{iir}")
+        ax[iir].legend(wvs)
+    ax[iir].set_xlabel('FOVS')
+    plt.suptitle("In focus Z v FOV")
+    report_pdf.savefig()
+    report_pdf.close()

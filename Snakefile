@@ -84,7 +84,8 @@ rule all_done:
     run:
         if config["isRemote"]=="Y":
             shell("rm -rf \"{}\"".format(os.path.join(config['results_path'],'data')))
-        shell("rm -f \"{}\"".format(os.path.join(config['results_path'],'img*')))
+        if config["delete_stack"]=="Y":
+            shell("rm -f \"{}\"".format(os.path.join(config['results_path'],'img*')))
         shell("touch \"{output[0]}\"")
 
 rule all:
@@ -101,7 +102,7 @@ def isRemote(wildcards):
         return directory(os.path.join(config['results_path'],'data'))
 
 rule create_image_stack:
-    threads:8
+    threads:16
     message: default_message
     input:
         isRemote
@@ -141,16 +142,20 @@ rule focus_report:
         img_stack = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
         coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
     output:
-        out=os.path.join(config['results_path'],'focus_report_{fov}.pdf')
+        out=os.path.join(config['results_path'],'focus_report_{fov}.pdf'),
+        out_csvs = os.path.join(config['results_path'],'focus_report_{fov}.csv')
     run:
-        reports.generate_focus_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,fovs)
+        reports.generate_focus_reports(input.img_stack,input.coord_file,output.out,output.out_csvs,wildcards.fov,fovs)
 
 rule compile_focus_report:
     threads:1
     message: default_message
     input:
-        expand(os.path.join(config['results_path'],'focus_report_{fov}.pdf'),fov=fovs)
+        files = expand(os.path.join(config['results_path'],'focus_report_{fov}.pdf'),fov=fovs),
+        csvs = expand(os.path.join(config['results_path'],'focus_report_{fov}.csv'),fov=fovs)
     output:
-        os.path.join(config['results_path'],'focus_report.t')
-    shell:
-        "touch \"{output}\""
+        combined = os.path.join(config['results_path'],'focus_report_all_fov.pdf'),
+        out = os.path.join(config['results_path'],'focus_report.t')
+    run:
+        reports.compile_focus_report(input.csvs,output.combined,irs,wvs)
+        shell("touch \"{output.out}\"")
