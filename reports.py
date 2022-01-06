@@ -216,26 +216,57 @@ class FocusReport(BaseReport):
 
     #Reports-----
     def f_measure_report(self):
-        #Take the image stack and do a max projection from all the pixels through z
-        f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=1,sharex=True,sharey=True,figsize=(len(self.coords['zs'])*1,15))
-        if not isinstance(ax,np.ndarray):
-            ax = np.array([ax])
-        plt.suptitle(f'FOV: {self.fov_name}')
+
+
+        #create an empty matrix with dimensions of ir x wv x z (rows v cols v depth) 
+        #Populate the matrix in the loop
+        #Then imshow and add text
+
+        focus_matrix = np.zeros((len(self.coords['irs']),
+                                len(self.coords['wvs']),
+                                len(self.coords['zs']))
+                                )
+
         for iir,ir in enumerate(self.coords['irs']):
-            ax[iir].set_title(f'ir: {ir}')
             for iwv,wv in enumerate(self.coords['wvs']):
-                output=[]
                 for iz,z in enumerate(self.coords['zs']):
-                    fnum = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
-                    output.append(fnum)
+                    focus_matrix[iir,iwv,iz] = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
+
+        viz_focus_matrix = np.argmax(focus_matrix,axis=2)
+
+        f, ax = plt.subplots()
+        im = ax.imshow(viz_focus_matrix)     
+
+        ax.set_xticks(np.arange(len(self.coords['wvs'])), labels=self.coords['wvs'])
+        ax.set_yticks(np.arange(len(self.coords['irs'])), labels=self.coords['irs'])
+
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        for iir in range(len(self.coords['irs'])):
+            for iwv in range(len(self.coords['wvs'])):
+                text = ax.text(iwv, iir, viz_focus_matrix[iir, iwv], ha="center", va="center", color="w")
+
+
+        # #Take the image stack and do a max projection from all the pixels through z
+        # f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=1,sharex=True,sharey=True,figsize=(len(self.coords['zs'])*1,15))
+        # if not isinstance(ax,np.ndarray):
+        #     ax = np.array([ax])
+        # plt.suptitle(f'FOV: {self.fov_name}')
+        # for iir,ir in enumerate(self.coords['irs']):
+        #     ax[iir].set_title(f'ir: {ir}')
+        #     for iwv,wv in enumerate(self.coords['wvs']):
+        #         output=[]
+        #         for iz,z in enumerate(self.coords['zs']):
+        #             fnum = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
+        #             output.append(fnum)
                 
-                ax[iir].plot(output,color=base_colors[iwv])
-                _output = np.array(output)
-                peak = _output.argmax()
-                self.peak_idx[iwv,iir]=peak
-                ax[iir].vlines(peak,0,_output[peak],colors=base_colors[iwv],linestyles='dashed')
-                ax[iir].set_yscale('log')
-            ax[iir].legend(self.coords['wvs'])
+        #         ax[iir].plot(output,color=base_colors[iwv])
+        #         _output = np.array(output)
+        #         peak = _output.argmax()
+        #         self.peak_idx[iwv,iir]=peak
+        #         ax[iir].vlines(peak,0,_output[peak],colors=base_colors[iwv],linestyles='dashed')
+        #         ax[iir].set_yscale('log')
+        #     ax[iir].legend(self.coords['wvs'])
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
