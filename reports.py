@@ -330,16 +330,39 @@ def compile_focus_report(file_list:list,output,irs,wvs):
     f,ax = plt.subplots(nrows = len(irs),ncols = 1,sharex=True,sharey=True,figsize=(len(file_list)*3,len(irs)*4))
     if not isinstance(ax,np.ndarray):
         ax = np.array(ax)
+
+    compiled_matrix = np.zeros((
+        len(file_list), # length of fovs
+        len(wvs),
+        len(irs)
+    ))
+
     for iir, ir in enumerate(irs):#for each ir
         
         for iwv, wv in enumerate(wvs):#for each wv
             data = full_df[["FOV",str(wv)]][(full_df["IR"]==int(ir))] #extract the FOVs...assume stuff is ordered
             
-            ax[iir].plot("FOV",str(wv),data=data)
+            data = data.to_numpy() # FOV x 2
+
+            compiled_matrix[:,:,iir] = data[:,1]
+
+            #ax[iir].plot("FOV",str(wv),data=data)
             
         ax[iir].set_ylabel(f"IR:{iir}")
         ax[iir].legend(wvs)
     ax[iir].set_xlabel('FOVS')
     plt.suptitle("In focus Z v FOV")
+
+    # for iir, ir in enumerate(irs):#for each ir
+        
+    #     for iwv, wv in enumerate(wvs):#for each wv
+    #         data = full_df[["FOV",str(wv)]][(full_df["IR"]==int(ir))] #extract the FOVs...assume stuff is ordered
+            
+    #         ax[iir].plot("FOV",str(wv),data=data)
+            
+    #     ax[iir].set_ylabel(f"IR:{iir}")
+    #     ax[iir].legend(wvs)
+    # ax[iir].set_xlabel('FOVS')
+    # plt.suptitle("In focus Z v FOV")
     report_pdf.savefig()
     report_pdf.close()
