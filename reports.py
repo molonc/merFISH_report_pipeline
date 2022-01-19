@@ -107,7 +107,10 @@ class BrightnessReport(BaseReport):
         if not isinstance(ax,np.ndarray):
             ax = np.array([ax])
         if len(ax.shape)==1:
-            ax=ax[:,np.newaxis]
+            if len(self.coords['irs'])==1:
+                ax=ax[np.newaxis,:]
+            elif len(self.coords['wvs'])==1:
+                ax=ax[:,np.newaxis]
         plt.suptitle(f'FOV: {self.fov_name}')
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
@@ -139,7 +142,10 @@ class BrightnessReport(BaseReport):
         if not isinstance(ax,np.ndarray):
             ax = np.array([ax])
         if len(ax.shape)==1:
-            ax=ax[:,np.newaxis]
+            if len(self.coords['irs'])==1:
+                ax=ax[np.newaxis,:]
+            elif len(self.coords['wvs'])==1:
+                ax=ax[:,np.newaxis]
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
                 img = mip_z_stack[:,:,iwv,iir]
@@ -169,7 +175,10 @@ class BrightnessReport(BaseReport):
         if not isinstance(ax,np.ndarray):
             ax = np.array([ax])
         if len(ax.shape)==1:
-            ax=ax[:,np.newaxis]
+            if len(self.coords['irs'])==1:
+                ax=ax[np.newaxis,:]
+            elif len(self.coords['wvs'])==1:
+                ax=ax[:,np.newaxis]
         for iwv,wv in enumerate(self.coords['wvs']):
             for iir,ir in enumerate(self.coords['irs']):
                 img = mip_z_stack[:,:,iwv,iir]
@@ -283,13 +292,13 @@ def compile_focus_report(file_list:list,output,irs,wvs):
         full_df = full_df.append(test,ignore_index=True)
     
     full_df.to_csv(output)
-
+    if not isinstance(irs,list):
+        irs = list(irs)
     report_pdf = PdfPages(filename = output)
     #x:FOV y:z spy:IR
     f,ax = plt.subplots(nrows = len(irs),ncols = 1,sharex=True,sharey=True,figsize=(len(file_list)*3,len(irs)*4))
     if not isinstance(ax,np.ndarray):
         ax = np.array(ax)
-
     for iir, ir in enumerate(irs):#for each ir
         
         for iwv, wv in enumerate(wvs):#for each wv
