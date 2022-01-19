@@ -110,7 +110,8 @@ def create_focus_report():
 def compile_focus_reports():
 
     in_files = [f'focus_{fov}.csv']
-    reports.compile_focus_report_csvs(in_files,irs=irs,wvs=wvs)
+    output = 'full_report_debug.csv'
+    reports.compile_focus_report(in_files,output=output,irs=irs,wvs=wvs)
 
 
 if __name__=='__main__':
