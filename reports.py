@@ -216,26 +216,58 @@ class FocusReport(BaseReport):
 
     #Reports-----
     def f_measure_report(self):
-        #Take the image stack and do a max projection from all the pixels through z
-        f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=1,sharex=True,sharey=True,figsize=(len(self.coords['zs'])*1,15))
-        if not isinstance(ax,np.ndarray):
-            ax = np.array([ax])
-        plt.suptitle(f'FOV: {self.fov_name}')
+
+
+        #create an empty matrix with dimensions of ir x wv x z (rows v cols v depth) 
+        #Populate the matrix in the loop
+        #Then imshow and add text
+
+        focus_matrix = np.zeros((len(self.coords['irs']),
+                                len(self.coords['wvs']),
+                                len(self.coords['zs']))
+                                )
+
         for iir,ir in enumerate(self.coords['irs']):
-            ax[iir].set_title(f'ir: {ir}')
             for iwv,wv in enumerate(self.coords['wvs']):
-                output=[]
                 for iz,z in enumerate(self.coords['zs']):
-                    fnum = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
-                    output.append(fnum)
+                    focus_matrix[iir,iwv,iz] = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
+
+        viz_focus_matrix = np.argmax(focus_matrix,axis=2)
+
+        f, ax = plt.subplots()
+        im = ax.imshow(viz_focus_matrix)     
+
+        ax.set_xticks(np.arange(len(self.coords['wvs'])), self.coords['wvs'])
+        ax.set_yticks(np.arange(len(self.coords['irs'])), self.coords['irs'])
+        ax.set_xlabel("Wavelength (nm)")
+        ax.set_ylabel("Imaging Round")
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        for iir in range(len(self.coords['irs'])):
+            for iwv in range(len(self.coords['wvs'])):
+                text = ax.text(iwv, iir, viz_focus_matrix[iir, iwv], ha="center", va="center", color="w")
+
+
+        # #Take the image stack and do a max projection from all the pixels through z
+        # f,ax = plt.subplots(nrows=len(self.coords['irs']),ncols=1,sharex=True,sharey=True,figsize=(len(self.coords['zs'])*1,15))
+        # if not isinstance(ax,np.ndarray):
+        #     ax = np.array([ax])
+        # plt.suptitle(f'FOV: {self.fov_name}')
+        # for iir,ir in enumerate(self.coords['irs']):
+        #     ax[iir].set_title(f'ir: {ir}')
+        #     for iwv,wv in enumerate(self.coords['wvs']):
+        #         output=[]
+        #         for iz,z in enumerate(self.coords['zs']):
+        #             fnum = self.f_measure(self.imgstack[:,:,iwv,iir,iz])
+        #             output.append(fnum)
                 
-                ax[iir].plot(output,color=base_colors[iwv])
-                _output = np.array(output)
-                peak = _output.argmax()
-                self.peak_idx[iwv,iir]=peak
-                ax[iir].vlines(peak,0,_output[peak],colors=base_colors[iwv],linestyles='dashed')
-                ax[iir].set_yscale('log')
-            ax[iir].legend(self.coords['wvs'])
+        #         ax[iir].plot(output,color=base_colors[iwv])
+        #         _output = np.array(output)
+        #         peak = _output.argmax()
+        #         self.peak_idx[iwv,iir]=peak
+        #         ax[iir].vlines(peak,0,_output[peak],colors=base_colors[iwv],linestyles='dashed')
+        #         ax[iir].set_yscale('log')
+        #     ax[iir].legend(self.coords['wvs'])
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
@@ -295,20 +327,53 @@ def compile_focus_report(file_list:list,output,irs,wvs):
     if not isinstance(irs,list):
         irs = list(irs)
     report_pdf = PdfPages(filename = output)
-    #x:FOV y:z spy:IR
-    f,ax = plt.subplots(nrows = len(irs),ncols = 1,sharex=True,sharey=True,figsize=(len(file_list)*3,len(irs)*4))
-    if not isinstance(ax,np.ndarray):
-        ax = np.array(ax)
+    
+
+    compiled_matrix = np.zeros((
+        len(file_list), # length of fovs
+        len(wvs),
+        len(irs)
+    ))
+
     for iir, ir in enumerate(irs):#for each ir
         
         for iwv, wv in enumerate(wvs):#for each wv
             data = full_df[["FOV",str(wv)]][(full_df["IR"]==int(ir))] #extract the FOVs...assume stuff is ordered
             
-            ax[iir].plot("FOV",str(wv),data=data)
+            data = data.to_numpy() # FOV x 2
+
+            compiled_matrix[:,iwv,iir] = data[:,1] #this is the z
+
+            #ax[iir].plot("FOV",str(wv),data=data)
+    #x:FOV y:z spy:IR
+    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(len(wvs)*3,len(wvs)*4))    
+    
+    if not isinstance(ax,np.ndarray):
+        ax = np.array(ax)
+    
+    for iwv, wv in enumerate(wvs):#for each wv
+        ax[iwv].imshow(compiled_matrix[:,iwv,:])
+        ax[iwv].set_xticks(np.arange(len(irs)), irs)
+        ax[iwv].set_yticks(np.arange(len(file_list)), np.arange(len(file_list)))
+        ax[iwv].set_ylabel("FOVS ")
+        ax[iwv].set_xlabel("Imaging Round")
+        plt.setp(ax[iwv].get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        for iir in range(len(irs)):
+            for ifl in range(len(file_list)):
+                text = ax[iwv].text(iir, ifl, compiled_matrix[ifl,iwv, iir], ha="center", va="center", color="w")
+        ax[iwv].set_title(f"Wavelength: {wv} nm")
+
+    # for iir, ir in enumerate(irs):#for each ir
+        
+    #     for iwv, wv in enumerate(wvs):#for each wv
+    #         data = full_df[["FOV",str(wv)]][(full_df["IR"]==int(ir))] #extract the FOVs...assume stuff is ordered
             
-        ax[iir].set_ylabel(f"IR:{iir}")
-        ax[iir].legend(wvs)
-    ax[iir].set_xlabel('FOVS')
-    plt.suptitle("In focus Z v FOV")
+    #         ax[iir].plot("FOV",str(wv),data=data)
+            
+    #     ax[iir].set_ylabel(f"IR:{iir}")
+    #     ax[iir].legend(wvs)
+    # ax[iir].set_xlabel('FOVS')
+    # plt.suptitle("In focus Z v FOV")
     report_pdf.savefig()
     report_pdf.close()
