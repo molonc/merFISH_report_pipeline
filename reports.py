@@ -237,9 +237,10 @@ class FocusReport(BaseReport):
         f, ax = plt.subplots()
         im = ax.imshow(viz_focus_matrix)     
 
-        ax.set_xticks(np.arange(len(self.coords['wvs'])), labels=self.coords['wvs'])
-        ax.set_yticks(np.arange(len(self.coords['irs'])), labels=self.coords['irs'])
-
+        ax.set_xticks(np.arange(len(self.coords['wvs'])), self.coords['wvs'])
+        ax.set_yticks(np.arange(len(self.coords['irs'])), self.coords['irs'])
+        ax.set_xlabel("Wavelength (nm)")
+        ax.set_ylabel("Imaging Round")
         plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
         for iir in range(len(self.coords['irs'])):
@@ -326,10 +327,7 @@ def compile_focus_report(file_list:list,output,irs,wvs):
     if not isinstance(irs,list):
         irs = list(irs)
     report_pdf = PdfPages(filename = output)
-    #x:FOV y:z spy:IR
-    f,ax = plt.subplots(nrows = len(irs),ncols = 1,sharex=True,sharey=True,figsize=(len(file_list)*3,len(irs)*4))
-    if not isinstance(ax,np.ndarray):
-        ax = np.array(ax)
+    
 
     compiled_matrix = np.zeros((
         len(file_list), # length of fovs
@@ -344,14 +342,27 @@ def compile_focus_report(file_list:list,output,irs,wvs):
             
             data = data.to_numpy() # FOV x 2
 
-            compiled_matrix[:,:,iir] = data[:,1]
+            compiled_matrix[:,iwv,iir] = data[:,1] #this is the z
 
             #ax[iir].plot("FOV",str(wv),data=data)
-            
-        ax[iir].set_ylabel(f"IR:{iir}")
-        ax[iir].legend(wvs)
-    ax[iir].set_xlabel('FOVS')
-    plt.suptitle("In focus Z v FOV")
+    #x:FOV y:z spy:IR
+    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(len(wvs)*3,len(wvs)*4))    
+    
+    if not isinstance(ax,np.ndarray):
+        ax = np.array(ax)
+    
+    for iwv, wv in enumerate(wvs):#for each wv
+        ax[iwv].imshow(compiled_matrix[:,iwv,:])
+        ax[iwv].set_xticks(np.arange(len(irs)), irs)
+        ax[iwv].set_yticks(np.arange(len(file_list)), np.arange(len(file_list)))
+        ax[iwv].set_ylabel("FOVS ")
+        ax[iwv].set_xlabel("Imaging Round")
+        plt.setp(ax[iwv].get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        for iir in range(len(irs)):
+            for ifl in range(len(file_list)):
+                text = ax[iwv].text(iir, ifl, compiled_matrix[ifl,iwv, iir], ha="center", va="center", color="w")
+        ax[iwv].set_title(f"Wavelength: {wv} nm")
 
     # for iir, ir in enumerate(irs):#for each ir
         
