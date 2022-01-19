@@ -1,3 +1,5 @@
+.vscode/*
+
 # Snakemake
 .snakemake/*
 
@@ -7,3 +9,4 @@ __pycache__/*
 #internal testing files
 debug_stats
 profile_analysis.py
+

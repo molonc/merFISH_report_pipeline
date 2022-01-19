@@ -1,6 +1,6 @@
 {
-    "raw_data_path":"/Volumes/MERFISH_COLD/XP872",
-    "results_path":"/Volumes/MERFISH_COLD/XP872/debug_report",
+    "raw_data_path":"/Volumes/MERFISH/20211210 cambridge probes/20211210_smfish_camb_1314",
+    "results_path":"/Volumes/MERFISH_COLD/diagnostics/20211210 cambridge probes/20211210_smfish_camb_1314",
     "raw_image_format": "{wv}nm, Raw/merFISH_{ir}_{fov}_{z}.TIFF",
     "channel": [],
     "fov": [],
