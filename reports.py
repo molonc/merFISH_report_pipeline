@@ -275,8 +275,8 @@ class FocusReport(BaseReport):
         #Save the pk idx to a csv information for each imaging round
         df = pd.DataFrame()
         for iwv,wv in enumerate(self.coords['wvs']):
-            df[str(wv)] = self.peak_idx[iwv,:] # each imaging round is a row
-            df["FOV"] = len(self.peak_idx[iwv,:])*[self.fov_name]
+            df[str(wv)] = viz_focus_matrix[:,iwv] # each imaging round is a row
+            df["FOV"] = len(viz_focus_matrix[:,0])*[self.fov_name]
             df["IR"] = self.coords['irs']
         df.to_csv(self.out_csv)    
 
@@ -305,7 +305,7 @@ def generate_focus_reports(image_stack_file,coord_info,out_file,out_csv,fov,fovs
     import multiprocessing
     job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,out_csv,fov,fovs))
     job.start()
-    # focus_worker(image_stack_file,coord_info,out_file,fov,fovs)
+    # focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs)
 
 
 def focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs):

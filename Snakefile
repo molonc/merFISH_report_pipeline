@@ -71,7 +71,6 @@ def check_params():
 download_azure()
 zs,fovs,irs,wvs,full_raw_path = check_params()
 
-print(wvs)
 
 default_message= "rule {rule}, {wildcards}, threads: {threads}"
 
