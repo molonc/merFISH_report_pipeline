@@ -346,7 +346,7 @@ def compile_focus_report(file_list:list,output,irs,wvs):
 
             #ax[iir].plot("FOV",str(wv),data=data)
     #x:FOV y:z spy:IR
-    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(len(wvs)*3,len(wvs)*4))    
+    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(8,len(irs)*4))    
     
     if not isinstance(ax,np.ndarray):
         ax = np.array(ax)
@@ -361,7 +361,7 @@ def compile_focus_report(file_list:list,output,irs,wvs):
 
         for iir in range(len(irs)):
             for ifl in range(len(file_list)):
-                text = ax[iwv].text(iir, ifl, compiled_matrix[ifl,iwv, iir], ha="center", va="center", color="w")
+                text = ax[iwv].text(iir, ifl, int(compiled_matrix[ifl,iwv, iir]), ha="center", va="center", color="w")
         ax[iwv].set_title(f"Wavelength: {wv} nm")
 
     # for iir, ir in enumerate(irs):#for each ir
