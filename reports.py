@@ -275,8 +275,8 @@ class FocusReport(BaseReport):
         #Save the pk idx to a csv information for each imaging round
         df = pd.DataFrame()
         for iwv,wv in enumerate(self.coords['wvs']):
-            df[str(wv)] = self.peak_idx[iwv,:] # each imaging round is a row
-            df["FOV"] = len(self.peak_idx[iwv,:])*[self.fov_name]
+            df[str(wv)] = viz_focus_matrix[:,iwv] # each imaging round is a row
+            df["FOV"] = len(viz_focus_matrix[:,0])*[self.fov_name]
             df["IR"] = self.coords['irs']
         df.to_csv(self.out_csv)    
 
@@ -305,7 +305,7 @@ def generate_focus_reports(image_stack_file,coord_info,out_file,out_csv,fov,fovs
     import multiprocessing
     job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,out_csv,fov,fovs))
     job.start()
-    # focus_worker(image_stack_file,coord_info,out_file,fov,fovs)
+    # focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs)
 
 
 def focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs):
@@ -346,7 +346,7 @@ def compile_focus_report(file_list:list,output,irs,wvs):
 
             #ax[iir].plot("FOV",str(wv),data=data)
     #x:FOV y:z spy:IR
-    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(len(wvs)*3,len(wvs)*4))    
+    f,ax = plt.subplots(nrows = len(wvs),ncols = 1,sharex=True,sharey=True,figsize=(8,len(irs)*4))    
     
     if not isinstance(ax,np.ndarray):
         ax = np.array(ax)
@@ -361,7 +361,7 @@ def compile_focus_report(file_list:list,output,irs,wvs):
 
         for iir in range(len(irs)):
             for ifl in range(len(file_list)):
-                text = ax[iwv].text(iir, ifl, compiled_matrix[ifl,iwv, iir], ha="center", va="center", color="w")
+                text = ax[iwv].text(iir, ifl, int(compiled_matrix[ifl,iwv, iir]), ha="center", va="center", color="w")
         ax[iwv].set_title(f"Wavelength: {wv} nm")
 
     # for iir, ir in enumerate(irs):#for each ir

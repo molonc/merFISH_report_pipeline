@@ -103,8 +103,8 @@ def create_focus_report():
     coord_file = os.path.join(config['results_path'],f'coord_{fov}.json')
     
     out=os.path.join(config['results_path'],f'focus_report_{fov}.pdf')
-    
-    reports.generate_focus_reports(img_stack,coord_file,out,fov,fovs)
+    out_csv = os.path.join(config['results_path'],f'focus_report_{fov}.csv')
+    reports.generate_focus_reports(img_stack,coord_file,out,out_csv,fov,fovs)
 
 
 def compile_focus_reports():
@@ -126,15 +126,15 @@ if __name__=='__main__':
     # sub_end_time = time.time()
     # print(f'Brightness Report: {sub_end_time-sub_start_time}')
 
-    # sub_start_time = time.time()
-    # create_focus_report()
-    # sub_end_time = time.time()
-    # print(f'Focus Report: {sub_end_time-sub_start_time}')
-
     sub_start_time = time.time()
-    compile_focus_reports()
+    create_focus_report()
     sub_end_time = time.time()
-    print(f'Compiled Focus Report: {sub_end_time-sub_start_time}')    
+    print(f'Focus Report: {sub_end_time-sub_start_time}')
+
+    #sub_start_time = time.time()
+    #compile_focus_reports()
+    #sub_end_time = time.time()
+    #print(f'Compiled Focus Report: {sub_end_time-sub_start_time}')    
 
     end_time = time.time()
     print(f'Total Time: {end_time-start_time}')
