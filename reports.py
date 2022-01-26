@@ -1,5 +1,6 @@
 from numpy.core.numeric import full
 import skimage.io as skio
+import skimage.exposure as ske
 import scipy.ndimage as ndi
 import numpy as np
 import json
@@ -97,6 +98,47 @@ class BrightnessReport(BaseReport):
         
         self.fov_name = fov
         self.imgstack = self.imgstack[:,:,:,:,0,:] # Each image stack is only 1 FOV
+
+
+
+
+    #Helper----------------------------------------------
+    def calc_HS_metric(self,img):
+        '''
+        https://ieeexplore.ieee.org/document/6108900
+        '''
+        vals = np.percentile(img,[0.75,0.25])
+        max_val = np.max(img)
+        min_val = np.min(img)
+
+        return (vals[0]-vals[1])/(max_val-min_val)
+    def calc_HF_metric(self,img):
+        '''
+        https://ieeexplore.ieee.org/document/6108900
+        '''
+
+        hist,_ = np.histogram(img.flatten(),bins = int(img.max()//2),range=(0,img.max()))
+
+        return np.power(np.prod(hist),1/len(hist)) / hist.sum() * len(hist)
+
+        
+    def ski_is_low_contrast(self,img,fraction_threshold = 0.25):
+        return ske.is_low_contrast(img,fraction_threshold=fraction_threshold)
+
+    def contrast_test(self,img,threshold=0.25,method='ski'):
+        if method=='ski':
+            return self.ski_is_low_contrast(img,threshold)
+        elif method =='HS':
+            res = self.calc_HS_metric(img)
+            return res>threshold
+        elif method =='HF':
+            res = self.calc_HF_metric(img)
+            return res>threshold
+
+        
+
+
+
     #Reports----------------------------------------------
     def brightness_through_z(self):
         #Take the image stack and do a max projection from all the pixels through z
