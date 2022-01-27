@@ -98,6 +98,8 @@ class BrightnessReport(BaseReport):
         
         self.fov_name = fov
         self.imgstack = self.imgstack[:,:,:,:,0,:] # Each image stack is only 1 FOV
+        self.contrast_tape = np.zeros((self.imgstack.shape[2],
+                                    self.imgstack.shape[3]))
 
 
 
@@ -107,7 +109,7 @@ class BrightnessReport(BaseReport):
         '''
         https://ieeexplore.ieee.org/document/6108900
         '''
-        vals = np.percentile(img,[0.75,0.25])
+        vals = np.percentile(img.flattten(),[0.75,0.25])
         max_val = np.max(img)
         min_val = np.min(img)
 
@@ -158,10 +160,14 @@ class BrightnessReport(BaseReport):
             for iir,ir in enumerate(self.coords['irs']):
                 bin_num = int(largest//2)
 
-                data = mip_z_stack[:,:,iwv,iir].flatten()
+                data = mip_z_stack[:,:,iwv,iir]
+                self.contrast_tape[iwv,iir] = self.calc_HS_metric(data)
+                flat_data = data.flatten()
 
-                ax[iir,iwv].hist(data,bins=bin_num,range=(0,largest),log=True,histtype='step')
-
+                ax[iir,iwv].hist(flat_data,bins=bin_num,range=(0,largest),log=True,histtype='step')
+                ax[iir,iwv].text(0.5, 0.5, f'HS:{self.contrast_tape[iwv,iir]}',
+                                ha="center", va="center",
+                                transform=ax.transAxes)
                 if iwv==0:
                     ax[iir,iwv].set_ylabel(f'ir:{ir}')
                 if iir==0:
@@ -234,7 +240,7 @@ class BrightnessReport(BaseReport):
         self.pdf.savefig()
         plt.close(f)
 
-
+    
 
 class FocusReport(BaseReport):
     def __init__(self,imgstack_file,coord_info,fov,fovs,out_csv):
