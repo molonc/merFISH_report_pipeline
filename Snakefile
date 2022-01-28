@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 import os
-import makereports
+import makereports as reports
 from utils import fileIO
 
 configfile: "config.json"

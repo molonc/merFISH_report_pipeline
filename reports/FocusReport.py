@@ -1,4 +1,4 @@
-from BaseReport import BaseReport
+from .BaseReport import BaseReport
 
 import matplotlib.pyplot as plt
 import numpy as np

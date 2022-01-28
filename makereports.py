@@ -1,4 +1,5 @@
-from reports import BrightnessReport, FocusReport
+from reports.BrightnessReport import BrightnessReport
+from reports.FocusReport import FocusReport
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages

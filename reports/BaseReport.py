@@ -1,5 +1,5 @@
 import json
-
+import numpy as np
 class BaseReport:
     # Base class for all the reports
     def __init__(self,imgstack_file,coord_info):

@@ -1,4 +1,4 @@
-from BaseReport import BaseReport
+from .BaseReport import BaseReport
 
 import skimage.exposure as ske
 import numpy as np
