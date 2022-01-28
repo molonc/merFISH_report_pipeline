@@ -1,8 +1,8 @@
 from pathlib import Path
 import re
 import os
-import reports
-
+import makereports
+from utils import fileIO
 
 configfile: "config.json"
 
@@ -109,7 +109,7 @@ rule create_image_stack:
         out_file = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
         coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
     run:
-        reports.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),
+        fileIO.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),
                                     wvs,wildcards.fov,irs,zs,output.out_file,output.coord_file)
 
 rule brightness_report:
