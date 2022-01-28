@@ -109,7 +109,7 @@ class BrightnessReport(BaseReport):
         '''
         https://ieeexplore.ieee.org/document/6108900
         '''
-        vals = np.percentile(img.flattten(),[0.75,0.25])
+        vals = np.percentile(img.flatten(),[75,25])
         max_val = np.max(img)
         min_val = np.min(img)
 
@@ -167,7 +167,7 @@ class BrightnessReport(BaseReport):
                 ax[iir,iwv].hist(flat_data,bins=bin_num,range=(0,largest),log=True,histtype='step')
                 ax[iir,iwv].text(0.5, 0.5, f'HS:{self.contrast_tape[iwv,iir]}',
                                 ha="center", va="center",
-                                transform=ax.transAxes)
+                                transform=ax[iir,iwv].transAxes)
                 if iwv==0:
                     ax[iir,iwv].set_ylabel(f'ir:{ir}')
                 if iir==0:
@@ -244,11 +244,12 @@ class BrightnessReport(BaseReport):
 
         f,ax = plt.subplots()
 
-        ax.imshow(self.contrast_tape)
+        ims = ax.imshow(self.contrast_tape)
         ax.set_yticks(np.arange(len(self.coords['wvs'])), self.coords['wvs'])
         ax.set_xticks(np.arange(len(self.coords['irs'])), self.coords['irs'])
         ax.set_ylabel("Wavelength (nm)")
         ax.set_xlabel("Imaging Round")
+        plt.colorbar(ims)
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
@@ -355,6 +356,7 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
     br.preview_images()
     br.brightness_through_z()
     br.brightness_through_z_on_images()
+    br.contrast_heatmap()
     br.closePdf()
 
 
