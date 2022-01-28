@@ -249,6 +249,8 @@ class BrightnessReport(BaseReport):
         ax.set_xticks(np.arange(len(self.coords['irs'])), self.coords['irs'])
         ax.set_ylabel("Wavelength (nm)")
         ax.set_xlabel("Imaging Round")
+
+        ax.set_title(f'FOV: {self.fov_name}')
         plt.colorbar(ims)
         plt.tight_layout()
         self.pdf.savefig()
