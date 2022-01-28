@@ -240,7 +240,18 @@ class BrightnessReport(BaseReport):
         self.pdf.savefig()
         plt.close(f)
 
-    
+    def contrast_heatmap(self):
+
+        f,ax = plt.subplots()
+
+        ax.imshow(self.contrast_tape)
+        ax.set_yticks(np.arange(len(self.coords['wvs'])), self.coords['wvs'])
+        ax.set_xticks(np.arange(len(self.coords['irs'])), self.coords['irs'])
+        ax.set_ylabel("Wavelength (nm)")
+        ax.set_xlabel("Imaging Round")
+        plt.tight_layout()
+        self.pdf.savefig()
+        plt.close(f)
 
 class FocusReport(BaseReport):
     def __init__(self,imgstack_file,coord_info,fov,fovs,out_csv):
