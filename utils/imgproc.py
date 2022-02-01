@@ -8,7 +8,7 @@ def deconvolve_img(img,psf=None):
     if psf is None:
         psf = getPSF()
 
-    deconvolved_RL = restoration.richardson_lucy(img, psf, num_iter=30)
+    deconvolved_RL = restoration.richardson_lucy(img, psf, iterations=30)
 
     return deconvolved_RL
 
@@ -34,19 +34,19 @@ def getPSF(sig=None,size=5):
 
 
 def gaussianPSF(x,y,sig):
-    t = np.array([[x],[y]])
-
-    if not isinstance(sig,np.array):
-        sigma = np.array([[sig]])
-    else:
-        sigma = sig
-
-    if sigma.shape[0] != sigma.shape[1] or len(sigma.shape)!=2:
-        print('sigma is baddddd')
     
-    t = -0.5*t.T@np.linalg.inv(sigma)@t
+    t = np.power(x/sig,2) + np.power(y/sig,2)
+
+    
+    t = -0.5*t/sig
 
     return np.exp(t)
 
 
+if __name__=="__main__":
+    size = 7
+    x,y = np.mgrid[-int(size//2):int(size//2),
+            -int(size//2):int(size//2)]
 
+    print(x.shape)
+    print(gaussianPSF(x,y,3).shape)
