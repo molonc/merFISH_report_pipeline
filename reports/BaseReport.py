@@ -1,9 +1,10 @@
 import json
 import numpy as np
+import os
 class BaseReport:
     # Base class for all the reports
     def __init__(self,imgstack_file,coord_info):
-        
+        self.dirname = os.path.dirname(imgstack_file)
         self.imgstack = np.load(imgstack_file)
         a_file = open(coord_info, "r")
         self.coords = json.load(a_file)

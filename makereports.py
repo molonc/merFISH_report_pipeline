@@ -25,6 +25,7 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
     br.brightness_through_z_on_images()
     br.contrast_heatmap()
     br.closePdf()
+    br.output_csv()
 
 
 # Focus report worker-------

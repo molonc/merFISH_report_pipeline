@@ -3,7 +3,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python=3.7
+  - python=3.8
+  - pandas
   - snakemake
   - matplotlib
   - scikit-image

@@ -2,10 +2,10 @@ from .BaseReport import BaseReport
 
 import skimage.exposure as ske
 import numpy as np
-
+import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-
+import os
 
 
 
@@ -172,3 +172,15 @@ class BrightnessReport(BaseReport):
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
+    
+    def output_csv(self):
+        df = pd.DataFrame(columns=["Wavelength","Imaging Round",'Histogram Spread'])
+        #contrast tape is wv x ir
+        
+        for iwv,wv in enumerate(self.coords['wvs']):
+            for iir,ir in enumerate(self.coords['irs']):
+                    df.cat([df,
+                                {"Wavelength":wv,
+                                "Imaging Round":ir,
+                                "Histogram Spread":self.contrast_tape[iwv,iir]}],axis=0)
+        df.to_csv(os.path.join(self.dirname,f'brmetrics_{self.fov_name}.csv)
