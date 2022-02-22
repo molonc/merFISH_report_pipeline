@@ -32,7 +32,7 @@ def check_params():
         files = Path(config['raw_data_path']).rglob('*.TIFF')
     files = list(map(str,files))
     # Find all channel, ir, fov, and z from the file names
-    re_filter = r"(.*)(\d{3})(?=nm).*(\B\d{2})\D(\B\d{3})\D(\B\d{2}\b)"
+    re_filter = r"(.*)\D(\d+)(?=nm).*\D(\d+)\D(\d+)\D(\d+)"
     param_filter = re.compile(re_filter)
     results = list(map(param_filter.search,files))
     
