@@ -17,7 +17,7 @@ The `config.json` file contains the parameters required to run this pipeline. Th
     "z": [listof str],
     "isRemote":["Y" or "N"]
 
-If `"channel"`, `"fov"`, `"ir"`, and/or `"z"` are empty, they will be auto populated. Currently the `"raw_image_format"` is considered a constant and should not be changed. If isRemote is "Y", then it is assumed that `"raw_data_path"` is a url for a blob with an SAS using the `azcopy` tool.
+If `"channel"`, `"fov"`, `"ir"`, and/or `"z"` are empty, they will be auto populated. Currently the `"raw_image_format"` is considered a constant and should not be changed. If isRemote is "Y", then it is assumed that `"raw_data_path"` is a url for a blob using the `azcopy` tool. You will need to log into the az CLI prior to running this tool. 
 
 Once parameters have been selected, the pipeline can be run using
 
