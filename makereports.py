@@ -21,8 +21,8 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
     br.set_pdf(PdfPages(filename=out_file))
     
     br.preview_images()
-    br.brightness_through_z()
-    br.brightness_through_z_on_images()
+    br.brightness_infov_z()
+    br.brightness_on_images()
     br.contrast_heatmap()
     br.closePdf()
 

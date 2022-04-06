@@ -106,28 +106,28 @@ rule create_image_stack:
     input:
         isRemote
     output:
-        out_file = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
-        coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
+        out_file = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
     run:
         fileIO.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),
-                                    wvs,wildcards.fov,irs,zs,output.out_file,output.coord_file)
+                                    windowcard.fov,wildcard.z,irs,wvs,output.out_file,output.coord_file)
 
 rule brightness_report:
     threads:1
     message: default_message
     input:
-        img_stack = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
-        coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
+        img_stack = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
     output:
-        out=os.path.join(config['results_path'],'brightness_report_{fov}.pdf')
+        out=os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf')
     run:
-        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,fovs)
+        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wilcard.z)
 
 rule compile_brightness_report:
     threads:1
     message: default_message
     input:
-        expand(os.path.join(config['results_path'],'brightness_report_{fov}.pdf'),fov=fovs)
+        expand(os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
     output:
         os.path.join(config['results_path'],'brightness_report.t')
     shell:
