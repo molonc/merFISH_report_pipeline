@@ -78,6 +78,8 @@ rule all_done:
     input:
         os.path.join(config['results_path'],'brightness_report.t'),
         os.path.join(config['results_path'],'focus_report.t'),
+        os.path.join(config['results_path'],'deconvolved_brightness_report.t'),
+        os.path.join(config['results_path'],'masked_brightness_report.t')
     output:
         os.path.join(config['results_path'],'all_done.t')
     run:
@@ -147,6 +149,62 @@ rule compile_deconvolved_brightness_report:
         os.path.join(config['results_path'],'deconvolved_brightness_report.t')
     shell:
         "touch \"{output}\""
+
+
+rule create_mask_images:
+    threads:1
+    message: default_message
+    input:
+        img_stack = os.path.join(config['results_path'],'deconvolved','imgstack_{fov}_{z}.npy'),
+    output:
+        out_mask=os.path.join(config['results_path'],'masked','mask_{fov}_{z}.npy')
+    run:
+        imgproc.maskImages(input.img_stack,out_mask)
+
+
+rule masked_brightness_report:
+    threads:1
+    message: default_message
+    input:
+        img_stack = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
+        masks = os.path.join(config['results_path'],'masked','mask_{fov}_{z}.npy')
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
+    output:
+        out=os.path.join(config['results_path'],'masked_brightness_report_{fov}_{z}.pdf')
+    run:
+        reports.generate_masked_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wildcards.z,input.masks)
+
+rule compile_masked_brightness_report:
+    threads:1
+    message: default_message
+    input:
+        expand(os.path.join(config['results_path'],'masked_brightness_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
+    output:
+        os.path.join(config['results_path'],'masked_brightness_report.t')
+    shell:
+        "touch \"{output}\""
+
+rule brightness_report:
+    threads:1
+    message: default_message
+    input:
+        img_stack = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
+    output:
+        out=os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf')
+    run:
+        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wildcards.z)
+
+rule compile_brightness_report:
+    threads:1
+    message: default_message
+    input:
+        expand(os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
+    output:
+        os.path.join(config['results_path'],'brightness_report.t')
+    shell:
+        "touch \"{output}\""
+
 
 rule brightness_report:
     threads:1
