@@ -1,7 +1,7 @@
 import json
 import os
 import numpy as np
-from utils import fileIO
+from utils import fileIO,imgproc
 import reports
 import makereports
 from pathlib import Path
@@ -108,6 +108,12 @@ def create_image_stack():
 
     fileIO.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),fov,z,irs,wvs,out_file,coord_file)
 
+def create_deconvolved_images():
+    in_file = os.path.join(config['results_path'],f'imgstack_{fov}_{z}.npy')
+
+    out_file = os.path.join(config['results_path'],'deconvolved',f'deconvolved_{fov}_{z}.npy')
+    check_dirs(out_file)
+    imgproc._deconvolute(in_file,out_file)
 
 def create_brightness_report():
     
@@ -145,6 +151,12 @@ if __name__=='__main__':
     create_image_stack()
     sub_end_time = time.time()
     print(f'Image Stack: {sub_end_time-sub_start_time}')
+    
+    sub_start_time = time.time()
+    create_deconvolved_images()
+    sub_end_time = time.time()
+    print(f'Deconvolved Stack: {sub_end_time-sub_start_time}')
+
     sub_start_time = time.time()
     create_brightness_report()
     sub_end_time = time.time()
