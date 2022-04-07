@@ -1,6 +1,6 @@
 from .BaseReport import BaseReport
 
-from utils import imgproc
+from .utils import imgproc
 
 import skimage.exposure as ske
 import numpy as np
@@ -29,7 +29,7 @@ class BrightnessReport(BaseReport):
         '''
         https://ieeexplore.ieee.org/document/6108900
         '''
-        vals = np.percentile(img.flatten(),[75,25])
+        vals = np.percentile(img.ravel(),[75,25])
         max_val = np.max(img)
         min_val = np.min(img)
 
@@ -109,7 +109,7 @@ class BrightnessReport(BaseReport):
                 self.contrast_tape[iwv,iir] = self.calc_HS_metric(data)
                 flat_data = data.ravel()
 
-                ax[iir,iwv].hist(flat_data,bins=bin_num,range=(0,largest),log=True)
+                ax[iir,iwv].hist(flat_data,bins=bin_num,range=(0,largest),log=True,histtype='step')
                 ax[iir,iwv].text(0.5, 0.5, f'HS:{self.contrast_tape[iwv,iir]}',
                                 ha="center", va="center",
                                 transform=ax[iir,iwv].transAxes)
@@ -145,7 +145,7 @@ class BrightnessReport(BaseReport):
                 # Add histogram to the corner of the image
                 axins = inset_axes(ax[iir,iwv], width="25%", height="25%", loc=4, borderpad=1)
                 data = img.ravel()
-                axins.hist(data,bins=bin_num,range=(0,largest),log=True)
+                axins.hist(data,bins=bin_num,range=(0,largest),log=True,histtype='step')
                 axins.tick_params(labelleft=False, labelbottom=False)
                 if iwv==0:
                     ax[iir,iwv].set_ylabel(f'ir:{ir}')
@@ -194,7 +194,7 @@ class BrightnessReport(BaseReport):
 
                 data = mip_z_stack[:,:,iwv,iir]
                 self.contrast_tape[iwv,iir] = self.calc_HS_metric(data)
-                flat_data = data.flatten()
+                flat_data = data.ravel()
 
                 ax[iir,iwv].hist(flat_data,bins=bin_num,range=(0,largest),log=True,histtype='step')
                 ax[iir,iwv].text(0.5, 0.5, f'HS:{self.contrast_tape[iwv,iir]}',
