@@ -1,6 +1,6 @@
 from .BaseReport import BaseReport
 
-from .utils import imgproc
+from utils import imgproc
 
 import skimage.exposure as ske
 import numpy as np

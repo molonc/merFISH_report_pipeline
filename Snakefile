@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import os
 import makereports as reports
-from utils import fileIO
+from utils import fileIO,imgproc
 
 configfile: "config.json"
 
@@ -110,7 +110,21 @@ rule create_image_stack:
         coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
     run:
         fileIO.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),
-                                    windowcard.fov,wildcard.z,irs,wvs,output.out_file,output.coord_file)
+                                    wildcards.fov,wildcards.z,irs,wvs,output.out_file,output.coord_file)
+
+
+rule deconvolve_images:
+    threads:1
+    message: default_message
+    input:
+        in_file = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
+    output:
+        out_file = os.path.join(config['results_path'],'deconvolved','warped_{fov}_{z}.npy')
+    run:
+        imgproc._deconvolute(input.in_file,output.out_file)
+
+
+
 
 rule brightness_report:
     threads:1
@@ -121,7 +135,7 @@ rule brightness_report:
     output:
         out=os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf')
     run:
-        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wilcard.z)
+        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wildcards.z)
 
 rule compile_brightness_report:
     threads:1
@@ -138,8 +152,8 @@ rule focus_report:
     threads:1
     message: default_message
     input:
-        img_stack = expand(os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),z=zs)
-        coord_file = expand(os.path.join(config['results_path'],'coord_{fov}_{z}.json'),z=zs)
+        img_stack = expand(os.path.join(config['results_path'],'imgstack_{{fov}}_{z}.npy'),z=zs),
+        coord_file = expand(os.path.join(config['results_path'],'coord_{{fov}}_{z}.json'),z=zs)
     output:
         out=os.path.join(config['results_path'],'focus_report_{fov}.pdf'),
         out_csvs = os.path.join(config['results_path'],'focus_report_{fov}.csv')
