@@ -77,7 +77,7 @@ def check_params():
     return sorted(list(set(zs)),key=int),sorted(list(set(fovs)),key=int),sorted(list(set(irs)),key=int),sorted(list(set(wvs)),key=int),full_raw_path
 
 
-def check_dirs(files:list)->None:
+def check_dirs(files):
     """Checks to see if the directories for the files in the list exist. If they dont, then make those directories
 
     Args:
@@ -117,7 +117,7 @@ def create_brightness_report():
     out=os.path.join(config['results_path'],f'brightness_report_{fov}_{z}.pdf')
     check_dirs(out)
     
-    makereports.generate_brightness_reports(img_stack,coord_file,out,fov,z)
+    makereports.brightness_worker(img_stack,coord_file,out,fov,z)
 
 def create_focus_report():
     
@@ -127,12 +127,12 @@ def create_focus_report():
     out=os.path.join(config['results_path'],f'focus_report_{fov}.pdf')
     out_csv = os.path.join(config['results_path'],f'focus_report_{fov}.csv')
     check_dirs(out)
-    makereports.generate_focus_reports(img_stack,coord_file,out,out_csv,fov)
+    makereports.focus_worker(img_stack,coord_file,out,out_csv,fov)
 
 
 def compile_focus_reports():
 
-    in_files = [f'focus_{fov}.csv']
+    in_files = [os.path.join(config['results_path'],f'focus_report_{fov}.csv')]
     output = 'full_report_debug.csv'
     
     makereports.compile_focus_report(in_files,output=output,irs=irs,wvs=wvs)
