@@ -1,6 +1,6 @@
 import numpy as np
 from functools import partial
-from skimage import restoration
+from skimage import restoration,filters
 import skimage.io as skio
 from skimage.exposure import equalize_adapthist
 import skimage
@@ -105,7 +105,7 @@ def _deconvolute(image_stack,out_file):
             img = raw_image.astype("uint16")
             # High pass filtering
             filt = (
-                skimage.filters.gaussian(
+                filters.gaussian(
                     img, sigma=3, mode="nearest", truncate=2, preserve_range=True
                 )
                 .round()
@@ -117,10 +117,10 @@ def _deconvolute(image_stack,out_file):
             psf = _gaussian_kernel((10, 10), 2)
 
             np.where(img == np.nan, 0, img)
-            img = skimage.restoration.richardson_lucy(img, psf, iterations=30, clip=False)
+            img = restoration.richardson_lucy(img, psf, iterations=30, clip=False)
 
             # Low pass filtering
-            img = skimage.filters.gaussian(
+            img = filters.gaussian(
                 img,
                 sigma=1,
                 output=None,
