@@ -220,3 +220,13 @@ def gaussianPSF(x,y,sig):
 
 
 
+def maskImages(d_img_file,out_mask,percentile=98.5):
+    d_imgstack = np.load(d_img_file)
+    mask_imgstack = np.zeros_like(d_imgstack)
+    for iir in range(d_imgstack.shape[2]):
+        for iwv in range(d_imgstack.shape[3]):
+            _img = d_imgstack[:,:,iir,iwv]
+            clip = np.percentile(_img,percentile)
+            mask_imgstack[:,:,iir,iwv] = np.where(_img>clip,1,0)
+
+    np.save(out_mask,mask_imgstack)

@@ -1,4 +1,5 @@
 from reports.BrightnessReport import BrightnessReport
+from reports.MaskedBrightnessReport import MaskedBrightnessReport
 from reports.FocusReport import FocusReport
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,6 +26,23 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,z):
     br.brightness_on_images()
     br.contrast_heatmap()
     br.closePdf()
+
+# Masked Brightness report worker-------
+def generate_masked_brightness_reports(image_stack_file,coord_info,out_file,fov,z,mask_stack):
+    #This was necessary to prototype on OSX...consider removing in the future after testing
+    import multiprocessing
+    job = multiprocessing.Process(target=masked_brightness_worker,args=(image_stack_file,mask_stack,coord_info,out_file,fov,z))
+    job.start()
+
+def masked_brightness_worker(image_stack_file,mask_stack,coord_info,out_file,fov,z):
+    mbr = MaskedBrightnessReport(image_stack_file,mask_stack,coord_info,fov,z)
+    mbr.set_pdf(PdfPages(filename=out_file))
+    
+    mbr.preview_images()
+    mbr.brightness_infov_z()
+    mbr.brightness_on_images()
+    mbr.contrast_heatmap()
+    mbr.closePdf()
 
 
 # Focus report worker-------
