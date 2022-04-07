@@ -119,12 +119,34 @@ rule deconvolve_images:
     input:
         in_file = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
     output:
-        out_file = os.path.join(config['results_path'],'deconvolved','warped_{fov}_{z}.npy')
+        out_file = os.path.join(config['results_path'],'deconvolved','deconvolved_{fov}_{z}.npy')
     run:
         imgproc._deconvolute(input.in_file,output.out_file)
 
 
 
+
+rule deconvolved_brightness_report:
+    threads:1
+    message: default_message
+    input:
+        img_stack = os.path.join(config['results_path'],'deconvolved','imgstack_{fov}_{z}.npy'),
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
+    output:
+        out=os.path.join(config['results_path'],'deconvolved_brightness_report_{fov}_{z}.pdf')
+    run:
+        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wildcards.z)
+
+
+rule compile_deconvolved_brightness_report:
+    threads:1
+    message: default_message
+    input:
+        expand(os.path.join(config['results_path'],'deconvolved_brightness_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
+    output:
+        os.path.join(config['results_path'],'deconvolved_brightness_report.t')
+    shell:
+        "touch \"{output}\""
 
 rule brightness_report:
     threads:1
