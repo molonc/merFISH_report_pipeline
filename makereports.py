@@ -8,16 +8,16 @@ import pandas as pd
 
 
 # Brightness report worker-------
-def generate_brightness_reports(image_stack_file,coord_info,out_file,fov,fovs):
+def generate_brightness_reports(image_stack_file,coord_info,out_file,fov,z):
     #This was necessary to prototype on OSX...consider removing in the future after testing
     import multiprocessing
-    job = multiprocessing.Process(target=brightness_worker,args=(image_stack_file,coord_info,out_file,fov,fovs))
+    job = multiprocessing.Process(target=brightness_worker,args=(image_stack_file,coord_info,out_file,fov,z))
     job.start()
 
     #brightness_worker(image_stack_file,coord_info,out_file,fov,fovs)
 
-def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
-    br = BrightnessReport(image_stack_file,coord_info,fov,fovs)
+def brightness_worker(image_stack_file,coord_info,out_file,fov,z):
+    br = BrightnessReport(image_stack_file,coord_info,fov,z)
     br.set_pdf(PdfPages(filename=out_file))
     
     br.preview_images()
@@ -28,16 +28,16 @@ def brightness_worker(image_stack_file,coord_info,out_file,fov,fovs):
 
 
 # Focus report worker-------
-def generate_focus_reports(image_stack_file,coord_info,out_file,out_csv,fov,fovs):
+def generate_focus_reports(image_stack_file,coord_info,out_file,out_csv,fov):
     #This was necessary to prototype on OSX...consider removing in the future after testing
     import multiprocessing
-    job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,out_csv,fov,fovs))
+    job = multiprocessing.Process(target=focus_worker,args=(image_stack_file,coord_info,out_file,out_csv,fov))
     job.start()
     # focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs)
 
 
-def focus_worker(image_stack_file,coord_info,out_file,out_csv,fov,fovs):
-    fr = FocusReport(image_stack_file,coord_info,fov,fovs,out_csv)
+def focus_worker(image_stack_file,coord_info,out_file,out_csv,fov):
+    fr = FocusReport(image_stack_file,coord_info,fov,out_csv)
     fr.set_pdf(PdfPages(filename=out_file))
     fr.f_measure_report()
     fr.closePdf()

@@ -173,9 +173,8 @@ class BrightnessReport(BaseReport):
         plt.close(f)
         
     def _brightness_through_z(self):
-    """This is deprecated.
-    
-    """
+        """This is deprecated.
+        """
         #Take the image stack and do a max projection from all the pixels through z
         mip_z_stack = self.imgstack.max(axis=4)
 

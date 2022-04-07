@@ -138,13 +138,13 @@ rule focus_report:
     threads:1
     message: default_message
     input:
-        img_stack = os.path.join(config['results_path'],'imgstack_{fov}.npy'),
-        coord_file = os.path.join(config['results_path'],'coord_{fov}.json')
+        img_stack = expand(os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),z=zs)
+        coord_file = expand(os.path.join(config['results_path'],'coord_{fov}_{z}.json'),z=zs)
     output:
         out=os.path.join(config['results_path'],'focus_report_{fov}.pdf'),
         out_csvs = os.path.join(config['results_path'],'focus_report_{fov}.csv')
     run:
-        reports.generate_focus_reports(input.img_stack,input.coord_file,output.out,output.out_csvs,wildcards.fov,fovs)
+        reports.generate_focus_reports(input.img_stack,input.coord_file,output.out,output.out_csvs,wildcards.fov)
 
 rule compile_focus_report:
     threads:1

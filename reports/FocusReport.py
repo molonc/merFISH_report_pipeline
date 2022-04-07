@@ -7,11 +7,11 @@ import pandas as pd
 import scipy.ndimage as ndi
 
 class FocusReport(BaseReport):
-    def __init__(self,imgstack_file,coord_info,fov,fovs,out_csv):
-        super().__init__(imgstack_file,coord_info)
+    def __init__(self,imgstack_files,coord_infos,fov,out_csv):
+        super().__init__(imgstack_files,coord_infos)
         
         self.fov_name = fov
-        self.imgstack = self.imgstack[:,:,:,:,0,:]
+        self.imgstack = self.imgstack #(y,x,wvs,irs,zs)
 
         self.peak_idx = np.zeros((self.imgstack.shape[2],self.imgstack.shape[3]))
         self.out_csv = out_csv
