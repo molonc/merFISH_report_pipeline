@@ -117,7 +117,7 @@ def _deconvolute(image_stack,out_file):
             psf = _gaussian_kernel((10, 10), 2)
 
             np.where(img == np.nan, 0, img)
-            img = restoration.richardson_lucy(img, psf, iterations=30, clip=False)
+            img = restoration.richardson_lucy(img, psf, iterations=20, clip=False)
 
             # Low pass filtering
             img = filters.gaussian(

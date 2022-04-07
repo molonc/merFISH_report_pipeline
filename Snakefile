@@ -132,7 +132,7 @@ rule deconvolved_brightness_report:
     threads:1
     message: default_message
     input:
-        img_stack = os.path.join(config['results_path'],'deconvolved','imgstack_{fov}_{z}.npy'),
+        img_stack = os.path.join(config['results_path'],'deconvolved','deconvolved_{fov}_{z}.npy'),
         coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
     output:
         out=os.path.join(config['results_path'],'deconvolved_brightness_report_{fov}_{z}.pdf')
@@ -155,11 +155,11 @@ rule create_mask_images:
     threads:1
     message: default_message
     input:
-        img_stack = os.path.join(config['results_path'],'deconvolved','imgstack_{fov}_{z}.npy'),
+        img_stack = os.path.join(config['results_path'],'deconvolved','deconvolved_{fov}_{z}.npy'),
     output:
         out_mask=os.path.join(config['results_path'],'masked','mask_{fov}_{z}.npy')
     run:
-        imgproc.maskImages(input.img_stack,out_mask)
+        imgproc.maskImages(input.img_stack,output.out_mask)
 
 
 rule masked_brightness_report:
@@ -167,7 +167,7 @@ rule masked_brightness_report:
     message: default_message
     input:
         img_stack = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
-        masks = os.path.join(config['results_path'],'masked','mask_{fov}_{z}.npy')
+        masks = os.path.join(config['results_path'],'masked','mask_{fov}_{z}.npy'),
         coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
     output:
         out=os.path.join(config['results_path'],'masked_brightness_report_{fov}_{z}.pdf')
@@ -206,26 +206,6 @@ rule compile_brightness_report:
         "touch \"{output}\""
 
 
-rule brightness_report:
-    threads:1
-    message: default_message
-    input:
-        img_stack = os.path.join(config['results_path'],'imgstack_{fov}_{z}.npy'),
-        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json')
-    output:
-        out=os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf')
-    run:
-        reports.generate_brightness_reports(input.img_stack,input.coord_file,output.out,wildcards.fov,wildcards.z)
-
-rule compile_brightness_report:
-    threads:1
-    message: default_message
-    input:
-        expand(os.path.join(config['results_path'],'brightness_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
-    output:
-        os.path.join(config['results_path'],'brightness_report.t')
-    shell:
-        "touch \"{output}\""
 
 
 rule focus_report:

@@ -13,26 +13,36 @@ class BaseReport:
                 _contents = json.load(a_file)
 
                 for k,v in _contents.items():
+                    # print(v)
                     if not (k in merged_json):
                         #if the key isnt in the merged dictionary, then add and initialise it. This is python 3.6+ behaviour
                         merged_json[k] = v
                         continue
                     
-                    if not isinstance(merged_json[k],list):
+                    if not isinstance(merged_json[k],list) or isinstance(merged_json[k],str):
                         # If there is unique data and the value at k in merged dict is not a list already, make it one
                         merged_json[k] = [merged_json[k]]
+                    _test_dict = merged_json[k].copy()
+                    _base_set = set(_test_dict)
 
-                    _base_set = set(merged_json[k])
-                    _test_set = _base_set.copy()
-                    _test_set.add(v)
+                    if isinstance(v,list):
+                        _test_dict.extend(v)
+                    else:
+                        _test_dict.append(v)
 
+                    _test_set = set(_test_dict)
+                    # print(_test_set)
+                    # print(_base_set)
                     if len(_test_set)==len(_base_set):
                         # If there is nothing unique when making the set of the new content at that key and the old content, then skip
                         continue
+                    if isinstance(v,list):
+                        merged_json[k].extend(v)
+                    else:
+                        merged_json[k].append(v)
 
-                    
-                    merged_json[k].extend(v) #We use extend, not append here, in case the object is another iterable. We want to keep the list flat. 
             self.coords = merged_json
+            # print(self.coords)
         else:
             a_file = open(coord_infos, "r")
             self.coords = json.load(a_file)
