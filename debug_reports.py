@@ -1,7 +1,9 @@
 import json
 import os
 import numpy as np
+from utils import fileIO
 import reports
+import makereports
 from pathlib import Path
 import time
 import re
@@ -12,7 +14,7 @@ config = json.load(a_file)
 
 
 fov = '001'
-
+z='02'
 
 def download_azure():
     
@@ -75,66 +77,88 @@ def check_params():
     return sorted(list(set(zs)),key=int),sorted(list(set(fovs)),key=int),sorted(list(set(irs)),key=int),sorted(list(set(wvs)),key=int),full_raw_path
 
 
+def check_dirs(files:list)->None:
+    """Checks to see if the directories for the files in the list exist. If they dont, then make those directories
+
+    Args:
+        files (list[str]): the list of files whose directory paths to create. Needs to be the full, not relative paths
+        
+    """
+    if not type(files) == list:
+        d = os.path.dirname(files)
+        if not os.path.isdir(d):
+            # print(files+'files' + d +'Does not exist')
+            os.makedirs(d)
+    else:
+        for f in files:
+
+            d = os.path.dirname(f)
+            if d != "" and not os.path.isdir(d):
+                # print(f+'files' + d +'Does not exist')
+                os.makedirs(d)
+
 download_azure()
 zs,fovs,irs,wvs,full_raw_path = check_params()
 
 def create_image_stack():
 
-    out_file = os.path.join(config['results_path'],f'imgstack_{fov}.npy')
-    coord_file = os.path.join(config['results_path'],f'coord_{fov}.json')
+    out_file = os.path.join(config['results_path'],f'imgstack_{fov}_{z}.npy')
+    coord_file = os.path.join(config['results_path'],f'coord_{fov}_{z}.json')
+    check_dirs(out_file)
 
-
-    reports.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),wvs,fov,irs,zs,out_file,coord_file)
+    fileIO.create_image_stack(os.path.join(full_raw_path,config['raw_image_format']),fov,z,irs,wvs,out_file,coord_file)
 
 
 def create_brightness_report():
     
-    img_stack = os.path.join(config['results_path'],f'imgstack_{fov}.npy')
-    coord_file = os.path.join(config['results_path'],f'coord_{fov}.json')
+    img_stack = os.path.join(config['results_path'],f'imgstack_{fov}_{z}.npy')
+    coord_file = os.path.join(config['results_path'],f'coord_{fov}_{z}.json')
     
-    out=os.path.join(config['results_path'],f'brightness_report_{fov}.pdf')
+    out=os.path.join(config['results_path'],f'brightness_report_{fov}_{z}.pdf')
+    check_dirs(out)
     
-    
-    reports.generate_brightness_reports(img_stack,coord_file,out,fov,fovs)
+    makereports.generate_brightness_reports(img_stack,coord_file,out,fov,z)
 
 def create_focus_report():
     
-    img_stack = os.path.join(config['results_path'],f'imgstack_{fov}.npy')
-    coord_file = os.path.join(config['results_path'],f'coord_{fov}.json')
+    img_stack = [os.path.join(config['results_path'],f'imgstack_{fov}_{z}.npy')]
+    coord_file = [os.path.join(config['results_path'],f'coord_{fov}_{z}.json')]
     
     out=os.path.join(config['results_path'],f'focus_report_{fov}.pdf')
     out_csv = os.path.join(config['results_path'],f'focus_report_{fov}.csv')
-    reports.generate_focus_reports(img_stack,coord_file,out,out_csv,fov,fovs)
+    check_dirs(out)
+    makereports.generate_focus_reports(img_stack,coord_file,out,out_csv,fov)
 
 
 def compile_focus_reports():
 
     in_files = [f'focus_{fov}.csv']
     output = 'full_report_debug.csv'
-    reports.compile_focus_report(in_files,output=output,irs=irs,wvs=wvs)
+    
+    makereports.compile_focus_report(in_files,output=output,irs=irs,wvs=wvs)
 
 
 if __name__=='__main__':
     start_time = time.time()
 
-    # sub_start_time = time.time()
-    # create_image_stack()
-    # sub_end_time = time.time()
-    # print(f'Image Stack: {sub_end_time-sub_start_time}')
-    # sub_start_time = time.time()
-    # create_brightness_report()
-    # sub_end_time = time.time()
-    # print(f'Brightness Report: {sub_end_time-sub_start_time}')
+    sub_start_time = time.time()
+    create_image_stack()
+    sub_end_time = time.time()
+    print(f'Image Stack: {sub_end_time-sub_start_time}')
+    sub_start_time = time.time()
+    create_brightness_report()
+    sub_end_time = time.time()
+    print(f'Brightness Report: {sub_end_time-sub_start_time}')
 
     sub_start_time = time.time()
     create_focus_report()
     sub_end_time = time.time()
     print(f'Focus Report: {sub_end_time-sub_start_time}')
 
-    #sub_start_time = time.time()
-    #compile_focus_reports()
-    #sub_end_time = time.time()
-    #print(f'Compiled Focus Report: {sub_end_time-sub_start_time}')    
+    sub_start_time = time.time()
+    compile_focus_reports()
+    sub_end_time = time.time()
+    print(f'Compiled Focus Report: {sub_end_time-sub_start_time}')    
 
     end_time = time.time()
     print(f'Total Time: {end_time-start_time}')
