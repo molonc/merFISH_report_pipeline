@@ -7,7 +7,7 @@ class BaseReport:
         if isinstance(imgstack_files,list):
             #If there is a list of images, then extend the image stack along the last dimension
             _imgstack = np.array([np.load(image_stack) for image_stack in imgstack_files]) 
-            self.imgstack = np.stack(_imgstack,axis = len(_imgstack.shape))
+            self.imgstack = np.stack(_imgstack,axis = -1)
         else:
             self.imgstack = np.load(imgstack_files)
 
