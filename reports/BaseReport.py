@@ -4,12 +4,7 @@ class BaseReport:
     # Base class for all the reports
     def __init__(self,imgstack_files,coord_infos):
         
-        if isinstance(imgstack_files,list):
-            #If there is a list of images, then extend the image stack along the last dimension
-            _imgstack = np.array([np.load(image_stack) for image_stack in imgstack_files]) 
-            self.imgstack = np.stack(_imgstack,axis = -1)
-        else:
-            self.imgstack = np.load(imgstack_files)
+        self.imgstack = self._read_imgstack(imgstack_files)
 
         if isinstance(coord_infos,list):
             merged_json = dict()
@@ -23,13 +18,18 @@ class BaseReport:
                         merged_json[k] = v
                         continue
                     
-                    if len(set(merged_json[k],v))==len(set(merged_json[k])):
-                        # If there is nothing unique when making the set of the new content at that key and the old content, then skip
-                        continue
-
                     if not isinstance(merged_json[k],list):
                         # If there is unique data and the value at k in merged dict is not a list already, make it one
                         merged_json[k] = [merged_json[k]]
+
+                    _base_set = set(merged_json[k])
+                    _test_set = _base_set.copy()
+                    _test_set.add(v)
+
+                    if len(_test_set)==len(_base_set):
+                        # If there is nothing unique when making the set of the new content at that key and the old content, then skip
+                        continue
+
                     
                     merged_json[k].extend(v) #We use extend, not append here, in case the object is another iterable. We want to keep the list flat. 
             self.coords = merged_json
@@ -54,3 +54,13 @@ class BaseReport:
         if self.isPdf():
             self.pdf.close()
             self.pdf = None
+
+
+    def _read_imgstack(self,imgstack_files):
+        if isinstance(imgstack_files,list):
+            #If there is a list of images, then extend the image stack along the last dimension
+            _imgstack = np.array([np.load(image_stack) for image_stack in imgstack_files]) 
+            imgstack = np.stack(_imgstack,axis = -1)
+        else:
+            imgstack = np.load(imgstack_files)
+        return imgstack
