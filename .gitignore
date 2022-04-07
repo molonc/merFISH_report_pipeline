@@ -1,5 +1,7 @@
 .vscode/*
 
+*.pyc
+*.cpython*
 # Snakemake
 .snakemake/*
 
@@ -9,4 +11,6 @@ __pycache__/*
 #internal testing files
 debug_stats
 profile_analysis.py
-
+*-checkpoint.py
+*-checkpoint.ipynb
+*-checkpoint
