@@ -53,6 +53,7 @@ def create_image_stack(image_format,fov,z,irs,wvs,out_file,coord_file):
                 "x":x,
                 "wvs":wvs,
                 "irs":irs,
+                "zs":z
                 }
         a_file = open(coord_file, "w")
         a_file = json.dump(data, a_file)
