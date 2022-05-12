@@ -8,3 +8,4 @@ dependencies:
   - matplotlib
   - scikit-image
   - numpy
+  - scikit-learn

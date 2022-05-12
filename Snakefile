@@ -79,7 +79,8 @@ rule all_done:
         os.path.join(config['results_path'],'brightness_report.t'),
         os.path.join(config['results_path'],'focus_report.t'),
         os.path.join(config['results_path'],'deconvolved_brightness_report.t'),
-        os.path.join(config['results_path'],'masked_brightness_report.t')
+        os.path.join(config['results_path'],'masked_brightness_report.t'),
+        os.path.join(config['results_path'],'decodability_report.t')
     output:
         os.path.join(config['results_path'],'all_done.t')
     run:
@@ -232,3 +233,28 @@ rule compile_focus_report:
     run:
         reports.compile_focus_report(input.csvs,output.combined,irs,wvs)
         shell("touch \"{output.out}\"")
+
+
+rule decodability_report:
+    threads:1
+    message: default_message
+    input:
+        img_stack = os.path.join(config['results_path'],'deconvolved','deconvolved_{fov}_{z}.npy'),
+        coord_file = os.path.join(config['results_path'],'coord_{fov}_{z}.json'),
+        codebook_file = config["codebook_file"],
+        data_organization_file = config["data_org_file"]
+    output:
+        out=os.path.join(config['results_path'],'decodability_report_{fov}_{z}.pdf'),
+    run:
+        reports.generate_decodability_reports(input.img_stack,input.coord_file,output.out,input.codebook_file,input.data_organization_file,wildcards.fov,wildcards.z)
+
+
+rule compile_decodability_report:
+    threads:1
+    message: default_message
+    input:
+        expand(os.path.join(config['results_path'],'decodability_report_{fov}_{z}.pdf'),fov=fovs,z=zs)
+    output:
+        os.path.join(config['results_path'],'decodability_report.t')
+    shell:
+        "touch \"{output}\""

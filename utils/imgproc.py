@@ -34,57 +34,21 @@ def load_data_organization(data_org_file):
     """
     return read_table(data_org_file).to_dict("records")
 
-def warp_image(data_org_path, image_paths, output_path, config):
-    r"""Combines imaging rounds of a single fov into a stack after deconvolution
-    Args:
-        data_org_path: path to data organaization
-        image_paths: array of image paths for each imaging round (tiff or numpy)
-        output_path: output path for image stack (numpy)
-        config: pickled config object
-
-    Returns:
-        No return. Saves image stack as numpy array to output_path
-
-    Raises:
-        ValueError: if unexpected colour values are detected
-
-    Example of how to call warp_images:
-        ims = [
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_00_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_01_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_02_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_03_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_04_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_05_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_06_000.tif',
-            r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\merFISH_merged_07_000.tif'
-        ]
-        data_org_p = r'C:\Users\asmith\Documents\vancouver-python\sandbox\ims\data_organization.csv'
-        out_p = r'C:\Users\asmith\Documents\vancouver-python\sandbox\output\warped_updated.npy'
-        config = {'ir':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]}
-        warp_image(data_org_p, ims, out_p, config)
-    """
+def warp_image(data_org, image_stack,bit_num):
     
-    data_org = load_data_organization(data_org_path)
     warped_image_stack = []
-    for bit_num in range(config["bit_num"]):
+    for bit_num in range(bit_num):
         data_org_row = data_org[bit_num]
-        frame = int(data_org_row["frame"]) - 1
+        wv_idx =int(data_org_row["frame"]) - 1
+        ir_idx = int(data_org_row["imagingRound"])
+        im = image_stack[:,:,wv_idx,ir_idx]
+        
+        warped_image_stack.append(im)
 
-        # Reads the image for a single imaging round
-        image_path = image_paths[int(data_org_row["imagingRound"])]
-        im = skio.imread(image_path)
-        shape = im.shape
-        im = np.transpose(im, [len(shape) - 1] + list(range(len(shape) - 1)))
-        warped_image_stack.append(im[frame])
+    warped_imgs = np.stack(warped_image_stack,axis=0)
 
-    # pool = multiprocessing.get_context("forkserver").Pool()
-    warped_image_stack = map(
-        partial(_deconvolute), warped_image_stack
-        # partial(preprocess, dtype=config["dtype"]), warped_image_stack
-    )
-    np.save(output_path, np.asarray(list(warped_image_stack)))
-
+    return warped_imgs    
+    
 # Deconvolute Images
 def _deconvolute(image_stack,out_file):
     """ Deconvolutes image to sharpen features with filtering and richardson lucy restoration

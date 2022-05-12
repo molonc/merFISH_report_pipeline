@@ -1,4 +1,5 @@
 from reports.BrightnessReport import BrightnessReport
+from reports.DecodabilityReport import DecodabilityReport
 from reports.MaskedBrightnessReport import MaskedBrightnessReport
 from reports.FocusReport import FocusReport
 import numpy as np
@@ -43,6 +44,22 @@ def masked_brightness_worker(image_stack_file,mask_stack,coord_info,out_file,fov
     mbr.brightness_on_images()
     mbr.contrast_heatmap()
     mbr.closePdf()
+
+
+# Decodability Report worker --------
+def generate_decodability_reports(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z):
+    #This was necessary to prototype on OSX...consider removing in the future after testing
+    import multiprocessing
+    job = multiprocessing.Process(target=decodability_worker,args=(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z))
+    job.start()
+
+def decodability_worker(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z):
+    dr = DecodabilityReport(image_stack_file,coord_info,codebook_file,data_org_file,fov,z)
+    dr.set_pdf(PdfPages(filename=out_file))
+    
+    dr.make_bit_imgs()
+    dr.make_decodability_hists()
+    dr.closePdf()
 
 
 # Focus report worker-------

@@ -1,12 +1,14 @@
 {
-    "raw_data_path":"/Volumes/MERFISH/20211210 cambridge probes/20211210_smfish_camb_1314",
-    "results_path":"/Volumes/MERFISH_COLD/diagnostics/20211210 cambridge probes/20211210_smfish_camb_1314",
+    "raw_data_path":"/Volumes/MERFISH_COLD/XP872",
+    "results_path":"/Volumes/MERFISH_COLD/XP872/analysis_test_decode",
     "raw_image_format": "{wv}nm, Raw/merFISH_{ir}_{fov}_{z}.TIFF",
     "channel": [],
-    "fov": [],
+    "fov": ["001"],
     "ir": [],
-    "z": [],
+    "z": ["02"],
     "isRemote":"N",
     "azure_command":"azcopy cp \"{}\" \"{}\" --recursive",
-    "delete_stack":"N"
+    "delete_stack":"N",
+    "codebook_file": "/Volumes/MERFISH_COLD/Codebooks/C1E1_codebook_shahid.csv",
+    "data_org_file":"/Volumes/MERFISH_COLD/data_organization/data_organization.csv"
 }
