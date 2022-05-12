@@ -16,6 +16,9 @@ class DecodabilityReport(BaseReport):
 
 
         super().__init__(deconvolved_img_stack,coord_info)
+        if not (len(self.coords['wvs'])==4):
+            raise AssertionError("Image Stack must contain 4 channels")
+
         self.fov_name = fov
         self.z_name = z
         self.out_detection_stats=out_detection_stats
@@ -115,7 +118,7 @@ class DecodabilityReport(BaseReport):
             cropped_mask4 = masked4[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
             cropped_mask5 = masked5[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
 
-            if np.all(cropped_mask3!=1):
+            if np.all(cropped_mask3!=1) and np.all(cropped_mask5!=1):
                 pass #If the cropped area is empty, then try it all again
             else:
                 break
@@ -130,7 +133,7 @@ class DecodabilityReport(BaseReport):
 
             ax.imshow(colour_image*255,vmin=0,vmax=1)
             ax.set_title(f'Bit: {iax}')
-        plt.suptitle(f'Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words \n Row: {r}, Column {c}, fallwidth {window_half_width}')
+        plt.suptitle(f'Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words \n Row: {r}, Column {c}, CropSize {2*window_half_width+1}')
         # plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
