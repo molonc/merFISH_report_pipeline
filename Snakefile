@@ -245,8 +245,9 @@ rule decodability_report:
         data_organization_file = config["data_org_file"]
     output:
         out=os.path.join(config['results_path'],'decodability_report_{fov}_{z}.pdf'),
+        out_stats = os.path.join(config['results_path'],'decodability_stats_{fov}_{z}.txt')
     run:
-        reports.generate_decodability_reports(input.img_stack,input.coord_file,output.out,input.codebook_file,input.data_organization_file,wildcards.fov,wildcards.z)
+        reports.generate_decodability_reports(input.img_stack,input.coord_file,output.out,input.codebook_file,input.data_organization_file,wildcards.fov,wildcards.z,output.out_stats)
 
 
 rule compile_decodability_report:

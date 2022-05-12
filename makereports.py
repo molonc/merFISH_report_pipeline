@@ -47,14 +47,14 @@ def masked_brightness_worker(image_stack_file,mask_stack,coord_info,out_file,fov
 
 
 # Decodability Report worker --------
-def generate_decodability_reports(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z):
+def generate_decodability_reports(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z,out_detection_stats,):
     #This was necessary to prototype on OSX...consider removing in the future after testing
     import multiprocessing
-    job = multiprocessing.Process(target=decodability_worker,args=(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z))
+    job = multiprocessing.Process(target=decodability_worker,args=(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z,out_detection_stats))
     job.start()
 
-def decodability_worker(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z):
-    dr = DecodabilityReport(image_stack_file,coord_info,codebook_file,data_org_file,fov,z)
+def decodability_worker(image_stack_file,coord_info,out_file,codebook_file,data_org_file,fov,z,out_detection_stats):
+    dr = DecodabilityReport(image_stack_file,coord_info,codebook_file,data_org_file,fov,z,out_detection_stats)
     dr.set_pdf(PdfPages(filename=out_file))
     
     dr.make_bit_imgs()

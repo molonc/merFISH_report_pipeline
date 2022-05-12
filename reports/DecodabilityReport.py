@@ -10,21 +10,15 @@ import matplotlib as mpl
 import scipy.ndimage as ndi
 import skimage
 from sklearn.neighbors import NearestNeighbors
-
+mpl.rcParams["image.interpolation"] = 'none'
 class DecodabilityReport(BaseReport):
-    def __init__(self,deconvolved_img_stack,coord_info,codebook_file,data_org_file,fov,z):
-        """_summary_
+    def __init__(self,deconvolved_img_stack,coord_info,codebook_file,data_org_file,fov,z,out_detection_stats):
 
-        Args:
-            deconvolved_img_stack (_type_): _description_
-            coord_info (_type_): _description_
-            fov (_type_): _description_
-            z (_type_): _description_
-        """
 
         super().__init__(deconvolved_img_stack,coord_info)
         self.fov_name = fov
         self.z_name = z
+        self.out_detection_stats=out_detection_stats
         #Load the codebook file
         self.codebook = Codebook(codebook_file)
 
@@ -64,6 +58,10 @@ class DecodabilityReport(BaseReport):
         ax[1].imshow(bc4_img,cmap='gray',vmin=0,vmax=1,interpolation='none')
         ax[2].imshow(bc5_img,cmap='gray',vmin=0,vmax=1,interpolation='none')
 
+        ax[0].set_title("Image of 3-bit Decodable barcodes")
+        ax[1].set_title("Image of 4-bit Decodable barcodes")
+        ax[2].set_title("Image of 5-bit Decodable barcodes")
+
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
@@ -78,7 +76,7 @@ class DecodabilityReport(BaseReport):
 
         f,ax = plt.subplots(figsize=(40,40))
         ax.imshow(colour_img,vmin=0,vmax=1,interpolation='none')
-        ax.set_title('Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words')
+        plt.title('Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words')
         plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
@@ -87,36 +85,40 @@ class DecodabilityReport(BaseReport):
 
         #For each bit in the filtered warped image, spit out an RGB image 
 
-        f,axs = plt.subplots(4,4,figsize=(40,40))
+        f,axs = plt.subplots(4,4,figsize=(43,43))
         axs = axs.flatten()
         window_half_width = 50
 
-        r,c = 1200,800
+        while(True):
+            r,c = np.random.randint(0,bc3_img.shape[0]),np.random.randint(0,bc3_img.shape[1])
 
-        tl = [
-            int(r-window_half_width),
-            int(c-window_half_width)
-        ]
+            tl = [
+                int(r-window_half_width),
+                int(c-window_half_width)
+            ]
 
 
-        br = [
-            int(r+window_half_width),
-            int(c+window_half_width)
-        ]
+            br = [
+                int(r+window_half_width),
+                int(c+window_half_width)
+            ]
 
-        fwi = np.moveaxis(self.filtered_warped_images, 0, -1)
-        wi =  np.moveaxis(self.warped_imgs, 0, -1)
-        masked3 = np.multiply(fwi,np.reshape(self.dist_map[3]==1,image_blank.shape)[..., None])
+            fwi = np.moveaxis(self.filtered_warped_images, 0, -1)
+            wi =  np.moveaxis(self.warped_imgs, 0, -1)
+            masked3 = np.multiply(fwi,np.reshape(self.dist_map[3]==1,image_blank.shape)[..., None])
 
-        masked4 = np.multiply(fwi,np.reshape(self.dist_map[4]==0,image_blank.shape)[..., None])
+            masked4 = np.multiply(fwi,np.reshape(self.dist_map[4]==0,image_blank.shape)[..., None])
 
-        masked5 = np.multiply(fwi,np.reshape(self.dist_map[5]==1,image_blank.shape)[..., None])
+            masked5 = np.multiply(fwi,np.reshape(self.dist_map[5]==1,image_blank.shape)[..., None])
 
-        cropped_mask3 = masked3[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
-        cropped_mask4 = masked4[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
-        cropped_mask5 = masked5[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
+            cropped_mask3 = masked3[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
+            cropped_mask4 = masked4[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
+            cropped_mask5 = masked5[tl[0]:br[0]+1,tl[1]:br[1]+1,:] 
 
-        assert np.any(cropped_mask3==1), 'This is empty'
+            if np.all(cropped_mask3!=1):
+                pass #If the cropped area is empty, then try it all again
+            else:
+                break
 
         mpl.rcParams["image.interpolation"] = 'none'
         for iax,ax in enumerate(axs):
@@ -128,12 +130,12 @@ class DecodabilityReport(BaseReport):
 
             ax.imshow(colour_image*255,vmin=0,vmax=1)
             ax.set_title(f'Bit: {iax}')
-        plt.suptitle('Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words')
-        plt.tight_layout()
+        plt.suptitle(f'Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words \n Row: {r}, Column {c}, fallwidth {window_half_width}')
+        # plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
 
-        f,axs = plt.subplots(4,4,figsize=(40,40))
+        f,axs = plt.subplots(4,4,figsize=(43,43))
         axs = axs.flatten()
 
         masked3 = np.multiply(fwi,np.reshape(self.dist_map[3]==1,image_blank.shape)[..., None])
@@ -153,7 +155,7 @@ class DecodabilityReport(BaseReport):
         row5,col5,z5= np.where(cropped_mask5==1)
 
 
-        mpl.rcParams["image.interpolation"] = 'none'
+        
         for iax,ax in enumerate(axs):
             crop = wi[tl[0]:br[0]+1,tl[1]:br[1]+1,iax]
             crap_max = ndi.maximum_filter(crop, size=2, mode='constant')
@@ -165,8 +167,8 @@ class DecodabilityReport(BaseReport):
             ax.scatter(col5,row5,s=15,color='blue',marker='*')
             ax.scatter(peak[:,1],peak[:,0],s=10,color='yellow',marker='*')
             ax.set_title(f'Bit: {iax}')
-        plt.suptitle('')
-        plt.tight_layout()
+        plt.suptitle(f'Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words\n Overlayed on smoothed deconvolved image')
+        # plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
         
@@ -183,8 +185,8 @@ class DecodabilityReport(BaseReport):
             ax.scatter(col5,row5,s=15,color='blue',marker='*')
             ax.scatter(peak[:,1],peak[:,0],s=10,color='yellow',marker='*')
             ax.set_title(f'Bit: {iax}')
-        plt.suptitle('')
-        plt.tight_layout()
+        plt.suptitle(f'Red: 3-bit words; Green: 4-bit words; Blue: 5-bit words\n Overlayed thresholded deconvolved image')
+        # plt.tight_layout()
         self.pdf.savefig()
         plt.close(f)
                 
@@ -323,69 +325,23 @@ class DecodabilityReport(BaseReport):
         errorBit5 = findErrorBits(bright_pix_5bcs,self.codebook_bits,dist5,barcode5_ids,filter_val=1)
 
 
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.hist(errorBit3.ravel(),bins = [i for i in range(17)])
-        plt.tight_layout()
-        self.pdf.savefig()
-        plt.close(f)
-
-
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.hist(errorBit4.ravel(),bins = [i for i in range(17)])
-        plt.tight_layout()
-        self.pdf.savefig()
-        plt.close(f)
-
-
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.hist(errorBit5.ravel(),bins = [i for i in range(17)])
-        plt.tight_layout()
+        f,ax = plt.subplots(1,3,figsize=(3*10,10))
+        ax[0].hist(errorBit3.ravel(),bins = [i for i in range(17)],align='left')
+        ax[1].hist(errorBit4.ravel(),bins = [i for i in range(17)],align='left')
+        ax[2].hist(errorBit5.ravel(),bins = [i for i in range(17)],align='left')
+        ax[0].set_title('Bits to correct for 3-bit detections')
+        ax[1].set_title('Bits to correct for 4-bit detections')
+        ax[2].set_title('Bits to correct for 5-bit detections')
         self.pdf.savefig()
         plt.close(f)
 
         # # Save the output of detected barcodes
-        # number_report = [f"Number of 3bit Detections: {dist3[dist3==1].sum()}\n",
-        # f"Number of 4bit Detections: {(1+dist4[dist4==0]).sum()}\n",
-        # f"Number of 5bit Detections: {dist5[dist5==1].sum()}"]
+        number_report = [f"Number of 3bit Detections: {dist3[dist3==1].sum()}\n",
+        f"Number of 4bit Detections: {(1+dist4[dist4==0]).sum()}\n",
+        f"Number of 5bit Detections: {dist5[dist5==1].sum()}"]
 
-        # with open(f'./{plot_folder}/detection_stats.txt','w') as f:
-        #     f.writelines(number_report)
-
-
-        # make image that show the spatial distribution of the 3-5 bit images
-
-        bright_pix_3bcs = np.reshape(self.bit_map[3],(16,-1)).T
-        bright_pix_4bcs = np.reshape(self.bit_map[4],(16,-1)).T
-        bright_pix_5bcs = np.reshape(self.bit_map[5],(16,-1)).T
-        dist3, barcode3_ids = nbrs.kneighbors(bright_pix_3bcs)
-        dist4, barcode4_ids = nbrs.kneighbors(bright_pix_4bcs)
-        dist5, barcode5_ids = nbrs.kneighbors(bright_pix_5bcs)
-
-
-        image_blank = np.zeros((self.filtered_warped_images.shape[1],self.filtered_warped_images.shape[2]))
-
-        bc3_img = np.multiply(np.reshape(barcode3_ids,image_blank.shape)+1,np.reshape(dist3,image_blank.shape)==1)>0
-        bc4_img = np.multiply(np.reshape(barcode4_ids,image_blank.shape)+1,np.reshape(dist4,image_blank.shape)==0)>0
-        bc5_img = np.multiply(np.reshape(barcode5_ids,image_blank.shape)+1,np.reshape(dist5,image_blank.shape)==1)>0
-
-
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.imshow(bc3_img,cmap='gray')
-        plt.tight_layout()
-        self.pdf.savefig()
-        plt.close(f)
-
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.imshow(bc4_img,cmap='gray')
-        plt.tight_layout()
-        self.pdf.savefig()
-        plt.close(f)
-
-        f,ax = plt.subplots(figsize=(10,10))
-        ax.imshow(bc5_img,cmap='gray')
-        plt.tight_layout()
-        self.pdf.savefig()
-        plt.close(f)
+        with open(f'{self.out_detection_stats}','w') as f:
+            f.writelines(number_report)
 
 
 if __name__=="__main__":
