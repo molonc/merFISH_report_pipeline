@@ -4,6 +4,8 @@ from skimage import restoration,filters
 import skimage.io as skio
 from skimage.exposure import equalize_adapthist
 import skimage
+from skimage import registration
+import scipy.ndimage as ndi
 import pandas as pd
 def read_table(file):
     """
@@ -49,6 +51,24 @@ def warp_image(data_org, image_stack,bit_num):
 
     return warped_imgs    
     
+
+def register_stack(image_stack):
+    # image stack is a 4d numpy array
+    # (x,y,wv,ir)
+    # take out the 2nd wavelength [should be 561] and then register all the images with respect to the first imaging round
+    fiducial_wv = 1 # wavelength index for beads channel
+    ref_img = image_stack[:,:,fiducial_wv,0]
+    registered_images = image_stack.copy()
+    for ir_idx in range(1,image_stack.shape[3]):
+        img = image_stack[:,:,fiducial_wv,ir_idx]
+        shift, _, _ = registration.phase_cross_correlation(
+            ref_img, img, upsample_factor=100
+        )
+        for wv_idx in range(image_stack.shape[2]):
+            _img = image_stack[:,:,wv_idx,ir_idx]
+            registered_images[:,:,wv_idx,ir_idx] = ndi.shift(_img,shift)
+    return registered_images
+
 # Deconvolute Images
 def _deconvolute(image_stack,out_file):
     """ Deconvolutes image to sharpen features with filtering and richardson lucy restoration
@@ -60,11 +80,13 @@ def _deconvolute(image_stack,out_file):
         img: filtered and restored image. This image maintains the original dtype
     """
 
-    _imgstack = np.load(image_stack) #(y,x,ir,wv)
-    d_imgstack = np.zeros_like(_imgstack)
-    for iir in range(_imgstack.shape[2]):
-        for iwv in range(_imgstack.shape[3]):
-            raw_image = _imgstack[:,:,iir,iwv]
+    _imgstack = np.load(image_stack) #(y,x,wv,ir)
+    d_imgstack = _imgstack.copy()
+    for iir in range(_imgstack.shape[3]):
+        for iwv in range(_imgstack.shape[2]):
+            if iwv==1:
+                continue
+            raw_image = _imgstack[:,:,iwv,iir]
 
             img = raw_image.astype("uint16")
             # High pass filtering
@@ -94,7 +116,7 @@ def _deconvolute(image_stack,out_file):
                 truncate=4.0,
             )
 
-            d_imgstack[:,:,iir,iwv] = img
+            d_imgstack[:,:,iwv,iir] = img
     
     np.save(out_file,d_imgstack)
 

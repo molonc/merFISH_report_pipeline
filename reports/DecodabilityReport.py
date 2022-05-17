@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("../")
 from utils.fileIO import Codebook, read_table
-from utils.imgproc import warp_image
+from utils.imgproc import warp_image,register_stack
 from utils.helper_functions import performDumbExtraction, findErrorBits
 from .BaseReport import BaseReport
 import numpy as np
@@ -53,9 +53,9 @@ class DecodabilityReport(BaseReport):
 
         # Load the dataorg file
         data_org = read_table(data_org_file).to_dict("records")
-
+        self.registered_images = register_stack(self.imgstack)
         # Warp the deconvolved image stack into (16,x,y)
-        self.warped_imgs = warp_image(data_org, self.imgstack, 16)
+        self.warped_imgs = warp_image(data_org, self.registered_images, 16)
 
         # Pass into the perform the dumb extraction
         (
