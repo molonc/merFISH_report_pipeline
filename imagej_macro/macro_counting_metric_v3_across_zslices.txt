@@ -1,0 +1,99 @@
+// Open this macro from ImageJ
+// Change the input_dir: a directory which contain 8 images of same wavelength. 
+// or a big folder image, and define the pattern of image as image_fn below. 
+// then run entire macro: run macro from menu bar or Cmd + R in mac, ctrl + R in other os sys I think. 
+
+// With a given FOV, and given round
+// Counting pixels corresponding to spots across different z-slices. 
+
+setBatchMode(true);
+print("\\Clear");
+print("Counting pixels corresponding to spots across different z-slices");
+print("----------------------------------------------------------------");
+input_dir="/Users/hoatran/Documents/BCCRC_projects/merfish/XP2059_FOV25/demo_zslice_eval/";
+FOV=25;
+r=1;
+suffix=".TIFF";
+test_case = "counting_pixels_spots_r0"+r+"_FOV0"+FOV;
+output_dir=input_dir+test_case+"/";
+
+if(!File.exists(output_dir)) 
+      File.mkdir(output_dir);
+
+print(input_dir);
+print(output_dir);
+
+
+for (z=1; z<=3; z++) {
+  if(z<10){
+    zslice="0"+z;
+  }else{
+    zslice=""+z;
+  }
+  short_name = "merFISH_0"+r+"_0"+FOV+"_"+zslice;
+  image_fn=short_name+suffix;
+  print(image_fn);
+  open(input_dir+image_fn);
+  //short_name = substring(image_fn,0,indexOf(image_fn, suffix));
+  
+  run("8-bit");
+  
+  run("Enhance Contrast...", "saturated=0.2 normalize");
+  
+  run("Convolve...", "text1=[-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n] normalize");
+  
+  //open(input_dir+"demo/mask.tif");
+  
+  selectWindow(image_fn);
+  
+  //imageCalculator("AND create", image_fn,"mask.tif");
+  
+  //selectWindow("mask.tif");
+  
+  //close();
+  
+  //selectWindow("Result of "+image_fn);
+  
+  //selectWindow(image_fn);
+  
+  nBins = 256; 
+
+  getHistogram(values, counts, nBins);
+
+  nb_spots=0;
+  
+  for (i=250; i<nBins; i++) {
+  	nb_spots = nb_spots + counts[i];
+  
+  }
+  //setResult("Value", row, values[i]);
+  setResult("Image", z-1, short_name);
+  setResult("Spots", z-1, nb_spots);
+  updateResults();
+
+  //selectWindow("Result of "+image_fn);
+  //selectWindow(image_fn);
+  //saveAs("Tiff",output_dir+image_fn);
+
+  run("Close All"); 
+
+  //selectWindow(image_fn);
+
+//close();
+//run("Close All");
+}
+
+selectWindow("Results");
+saveAs("Results",output_dir+test_case+"_across_zslices.csv");
+print("Save output into the folder: "+output_dir);
+selectWindow("Results");
+run("Close");
+print("Completed");
+print("----------------------------------------------------------------");
+setBatchMode(false);
+
+
+
+
+
+
