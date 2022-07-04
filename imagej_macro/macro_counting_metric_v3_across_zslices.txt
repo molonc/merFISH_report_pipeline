@@ -24,7 +24,7 @@ print(input_dir);
 print(output_dir);
 
 
-for (z=1; z<=3; z++) {
+for (z=1; z<=16; z++) {
   if(z<10){
     zslice="0"+z;
   }else{
