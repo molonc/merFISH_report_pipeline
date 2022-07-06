@@ -37,9 +37,10 @@ def main():
     for i, ax in enumerate(axes.flat): 
         ax.set_xticks(X, xlist[i], fontsize = 25)
         ax.set_xticklabels(xlist[i], rotation = 45)
-        ax.set_ylabel(f'# spots in IR {i+1}', fontsize = 30, fontweight="bold")
+        ax.set_ylabel(f'# spots in IR {i+1}', fontsize = 28, fontweight="bold")
         ax.set_ylim([0,ymax])
-        ax.bar(X, spots[:,i])
+        ax.tick_params(axis='y', labelsize=25)
+        ax.bar(X, spots[:,i], width = args.bar_width)
         
    
     plt.tight_layout()
