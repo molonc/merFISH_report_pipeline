@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--output_dir', type = str, help = 'Output directory to store the results')
     parser.add_argument('--exp_name', type = str, help = 'Experiment name, e.g.: XP2059')
     parser.add_argument('--ch', type = int, help='Channel of concern')
+    parser.add_argument('--bar_width', type = float, default = 0.4, help = 'Width of bar')
     
     args = parser.parse_args()
 
