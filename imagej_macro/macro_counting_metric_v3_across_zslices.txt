@@ -10,11 +10,13 @@ setBatchMode(true);
 print("\\Clear");
 print("Counting pixels corresponding to spots across different z-slices");
 print("----------------------------------------------------------------");
-input_dir="/Users/hoatran/Documents/BCCRC_projects/merfish/XP2059_FOV25/demo_zslice_eval/";
-FOV=25;
-r=1;
+input_dir="E:/MERFISH RUNS/XP2061 20220512 ONI 4T1 C1E1 merfish/750nm, Raw/";
+FOV=20;
+r=5;
+numZ=11;
 suffix=".TIFF";
-test_case = "counting_pixels_spots_r0"+r+"_FOV0"+FOV;
+for( fov=1; fov<=FOV; fov++){
+test_case = "counting_pixels_spots_r0"+r+"_FOV0"+fov;
 output_dir=input_dir+test_case+"/";
 
 if(!File.exists(output_dir)) 
@@ -24,13 +26,19 @@ print(input_dir);
 print(output_dir);
 
 
-for (z=1; z<=16; z++) {
+for (z=1; z<=numZ; z++) {
   if(z<10){
     zslice="0"+z;
   }else{
     zslice=""+z;
   }
-  short_name = "merFISH_0"+r+"_0"+FOV+"_"+zslice;
+  if(fov<10){
+  	short_name = "merFISH_0"+r+"_00"+fov+"_"+zslice;
+  }
+  else{
+  	short_name = "merFISH_0"+r+"_0"+fov+"_"+zslice;
+
+  }
   image_fn=short_name+suffix;
   print(image_fn);
   open(input_dir+image_fn);
@@ -88,6 +96,7 @@ saveAs("Results",output_dir+test_case+"_across_zslices.csv");
 print("Save output into the folder: "+output_dir);
 selectWindow("Results");
 run("Close");
+}
 print("Completed");
 print("----------------------------------------------------------------");
 setBatchMode(false);
