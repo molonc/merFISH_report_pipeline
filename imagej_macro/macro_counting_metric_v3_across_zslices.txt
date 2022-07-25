@@ -10,13 +10,13 @@ setBatchMode(true);
 print("\\Clear");
 print("Counting pixels corresponding to spots across different z-slices");
 print("----------------------------------------------------------------");
-input_dir="E:/MERFISH RUNS/XP2061 20220512 ONI 4T1 C1E1 merfish/750nm, Raw/";
-FOV=20;
-r=5;
-numZ=11;
+input_dir="E:/20220715 bleed through xp the remix p2/1/1/647nm, Raw/";
+FOV=15;
+r=2;
+numZ=15;
 suffix=".TIFF";
-for( fov=1; fov<=FOV; fov++){
-test_case = "counting_pixels_spots_r0"+r+"_FOV0"+fov;
+for( fov=1; fov<=r; fov++){
+test_case = "counting_pixels_spots_r0"+fov+"_FOV0"+FOV;
 output_dir=input_dir+test_case+"/";
 
 if(!File.exists(output_dir)) 
@@ -32,11 +32,11 @@ for (z=1; z<=numZ; z++) {
   }else{
     zslice=""+z;
   }
-  if(fov<10){
-  	short_name = "merFISH_0"+r+"_00"+fov+"_"+zslice;
+  if(FOV<10){
+  	short_name = "merFISH_0"+fov+"_00"+FOV+"_"+zslice;
   }
   else{
-  	short_name = "merFISH_0"+r+"_0"+fov+"_"+zslice;
+  	short_name = "merFISH_0"+fov+"_0"+FOV+"_"+zslice;
 
   }
   image_fn=short_name+suffix;
