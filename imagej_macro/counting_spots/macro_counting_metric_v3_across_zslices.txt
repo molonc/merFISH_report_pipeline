@@ -15,7 +15,7 @@ FOV=25;
 r=1;
 suffix=".TIFF";
 test_case = "counting_pixels_spots_r0"+r+"_FOV0"+FOV;
-output_dir=input_dir+test_case+"/";
+output_dir=File.getParent(input_dir)+"/"+test_case+"/";
 
 if(!File.exists(output_dir)) 
       File.mkdir(output_dir);

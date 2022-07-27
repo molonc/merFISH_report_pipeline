@@ -1,0 +1,122 @@
+// Open this macro from ImageJ
+// Change the input_dir: a directory which contain merfish images of a dataset
+// or a big folder image, and define the pattern of image as image_fn below. 
+// then run entire macro: run macro from menu bar or Cmd + R in mac, ctrl + R, ctrl shift R in other os sys. 
+
+// With a given FOV, and given round
+// Counting pixels corresponding to spots across different z-slices. 
+
+setBatchMode(true);
+print("\\Clear");
+print("Counting pixels corresponding to spots across different z-slices");
+print("----------------------------------------------------------------");
+
+
+print("-----------------Parameter Setting---------------------------");
+input_dir="/Users/hoatran/Documents/BCCRC_projects/merfish/XP2059_FOV25/testing/";
+dataset="XP2059";
+nbFOVs=42;
+nbRounds=8;
+nbZslices=16;
+
+
+suffix=".TIFF";
+test_case = "counting_spots_across_FOVs_dataset_"+dataset;
+output_dir=File.getParent(input_dir)+"/"+test_case+"/";
+nBins = 256; 
+if(!File.exists(output_dir)) 
+      File.mkdir(output_dir);
+
+print(input_dir);
+print(output_dir);
+
+
+
+function deconvolute_binarization_image (image_fn) {
+  selectWindow(image_fn);
+  run("Enhance Contrast", "saturated=0.35");
+  if (bitDepth > 8) {run("8-bit");}
+  //run("Median...", "radius=2");  // in case you see lots of noises detected as signals
+  run("Convolve...", "text1=[-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n] normalize");
+
+
+  ////only signals with intensity values from 250 to 255 are considered as signals, from my observation of spots and noise in images. 
+  ////You can use other thresholds, this macro just give an estimation, not provide accurate results for publication. 
+  setThreshold(250, 255, "raw"); 
+  //setThreshold(250, 255);
+  setOption("BlackBackground", true);
+  run("Convert to Mask");
+  run("Grays");
+
+}
+//FOV=25;
+//r=1;
+c=0;
+for (FOV=1; FOV<=nbFOVs; FOV++) {
+  if(FOV<10){  // Isaac: is this the correct format for FOV?
+        FOV_label="0"+FOV;
+  }else{
+        FOV_label=""+FOV;
+  }
+  for (r=1; r<=nbRounds; r++) {
+  print("--------------------------------------------");
+  print("FOV:  "+FOV_label+"      round:  "+r);
+    output_img = "total_signals_round"+r;
+    for (z=1; z<=nbZslices; z++) {
+      if(z<10){
+        zslice="0"+z;
+      }else{
+        zslice=""+z;
+      }
+      short_name = "merFISH_0"+r+"_0"+FOV_label+"_"+zslice;
+      image_fn=short_name+suffix;
+      //print(image_fn);
+      open(input_dir+image_fn);
+      //short_name = substring(image_fn,0,indexOf(image_fn, suffix));
+      deconvolute_binarization_image (image_fn);
+      if(z==1){
+        selectWindow(image_fn);
+        rename(output_img);
+        //IJ.log('First assignment:  '+output_img);
+      }else{
+        //IJ.log('Sum: '+image_fn);
+        imageCalculator("OR create", output_img, image_fn);
+        selectWindow(image_fn);
+        close();
+        selectWindow(output_img);
+        close();	
+        selectWindow("Result of "+output_img); 
+        rename(output_img);	
+    
+      }
+    }
+    nBins = 256; 
+    getHistogram(values, counts, nBins);
+    IJ.log("Number of spots: "+counts[255]);
+    // //Save results into a csv file
+    setResult("FOV", c, FOV);
+    setResult("imaging_round", c, r);
+    setResult("total_spots", c, counts[255]);
+    updateResults();
+    c++;
+    selectWindow(output_img);
+    close();	
+  }  
+}
+selectWindow("Results");
+saveAs("Results",output_dir+"spots_across_FOV_report.csv");
+selectWindow("Results");
+run("Close");
+print("Save output into the folder: "+output_dir);
+
+run("Close All");
+
+print("Completed");
+print("----------------------------------------------------------------");
+setBatchMode(false);
+
+
+
+
+
+
