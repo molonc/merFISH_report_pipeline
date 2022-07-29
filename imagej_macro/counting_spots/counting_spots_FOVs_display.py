@@ -14,7 +14,7 @@ def load_data(path:Path) -> tuple:
     for f in files:
         if ".csv" in f.lower(): 
             df=pd.read_csv(f)
-            dfs.append((df))
+            dfs.append(df)
     return tuple(dfs)
 
 

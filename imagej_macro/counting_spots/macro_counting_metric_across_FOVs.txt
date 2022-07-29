@@ -13,7 +13,9 @@ print("----------------------------------------------------------------");
 
 
 print("-----------------Parameter Setting---------------------------");
-input_dir="/Users/hoatran/Documents/BCCRC_projects/merfish/XP2059_FOV25/testing/";
+input_dir="D:/Co-op/XP2059/1/1/";
+ch1="647nm, Raw/"
+ch2="750nm, Raw/"
 dataset="XP2059";
 nbFOVs=42;
 nbRounds=8;
@@ -49,6 +51,7 @@ function deconvolute_binarization_image (image_fn) {
   run("Grays");
 
 }
+
 //FOV=25;
 //r=1;
 c=0;
